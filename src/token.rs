@@ -3,6 +3,8 @@ pub enum Kind {
     WHITESPACE,
     NUMBER,
     IDENTIFIER,
+    EQUAL,
+    SEMICOLON,
 }
 
 #[derive(Debug)]
