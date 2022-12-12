@@ -33,7 +33,6 @@ pub fn lex(lines: Vec<String>) -> Vec<Token>{
     let mut tokens: Vec<Token> = Vec::new();
     let mut buf: Buffer = Default::default();
     let mut lineno: u32 = 0;
-    
 
     for line in lines.iter() {
         lineno += 1;
@@ -46,14 +45,14 @@ pub fn lex(lines: Vec<String>) -> Vec<Token>{
                     while buf.next().is_ascii_digit() {
                         number.push(buf.current);
                     }
-                    tokens.push(
-                        Token {
-                            kind: Kind::NUMBER,
-                            value: number,
-                            lineno: lineno,
-                            line: line.clone(),
-                            start: start,
-                        });
+                    tokens.push(Token{ kind: Kind::NUMBER, value: number, lineno: lineno, line: line.clone(), start: start });
+                }
+                'a'..='z' | 'A'..='Z' => {
+                    tokens.push(read_identifier(&mut buf, lineno, line));
+                }
+                ' ' => {
+                    tokens.push(Token{ kind: Kind::WHITESPACE, value: " ".to_string(), lineno: lineno, line: line.clone(), start: buf.pos });
+                    buf.next();
                 }
                 _ => {
                     buf.next();
@@ -62,4 +61,19 @@ pub fn lex(lines: Vec<String>) -> Vec<Token>{
         }
     }
     return tokens;
+}
+
+fn read_identifier(buf: &mut Buffer, lineno: u32, line: &String) -> Token {
+    let start = buf.pos;
+    let mut identifier: String = buf.current.to_string();
+    while !buf.done && buf.next().is_alphanumeric() {
+        identifier.push(buf.current);
+    }
+    return Token {
+        kind: Kind::IDENTIFIER,
+        value: identifier,
+        lineno: lineno,
+        line: line.clone(),
+        start: buf.pos
+    }
 }

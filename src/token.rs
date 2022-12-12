@@ -2,6 +2,7 @@
 pub enum Kind {
     WHITESPACE,
     NUMBER,
+    IDENTIFIER,
 }
 
 #[derive(Debug)]
