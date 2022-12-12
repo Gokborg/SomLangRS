@@ -1,28 +1,46 @@
 #[derive(Default)]
-pub struct Buffer<T> {
-    pos: usize,
-    current: T,
-    content: Vec<T>,
-    done: bool
+pub struct Buffer {
+    content: Vec<char>,
+    pub pos: usize,
 }
 
-impl<T> Buffer <T> {
-    fn set(&mut self, content: Vec<T>) {
-        self.content = content;
-        self.current = content[0];
-        self.pos = 0;
-        self.done = false;
+impl Buffer {
+    fn new(content: Vec<char>) -> Self {
+        Self { content, pos: 0 }
     }
 
-    fn next(&mut self) -> T {
+    fn done(&self) -> bool {
+        return self.pos >= self.content.len();
+    }
+    
+    fn next(&mut self) -> Option<char> {
+        if self.pos >= self.content.len() {
+            return None;
+        }
         self.pos += 1;
-        if self.pos < self.content.len() {
-            self.current = self.current[self.pos];
+        return Some(self.content[self.pos - 1]);
+    }
+    
+    fn peek(&mut self) -> Option<&char> {
+        return self.content.get(self.pos);
+    }
+
+    fn next_if<F: Fn(&char) -> bool>(&mut self, f: F) -> Option<char> {
+        let value = self.peek();
+        if let Some(value) = value {
+            if !f(value) {
+                return None;
+            }
+            self.pos += 1;
+            return Some(*value);
         }
-        else {
-            self.done = true;
-            self.current = '\0';
+        return None;
+    }
+
+    fn next_while<F: Fn(char) -> bool>(&mut self, f: F) {
+        let conn: String = self.content.get(self.pos).to_owned();
+        while self.next_if(f).is_some() {
+            conn.push(self.content[self.pos]);
         }
-        return self.current
     }
 }
