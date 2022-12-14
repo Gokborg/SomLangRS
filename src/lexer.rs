@@ -34,18 +34,8 @@ impl Lexer {
                     'a'..='z' | 'A'..='Z' => {
                         self.next_while(line, Kind::IDENTIFIER, |x| x.is_ascii_alphanumeric());
                     }
-                    '=' | ';' | ' ' => {
-                        self.tokens.push(Token {
-                            kind: self.get_symbol_kind(self.content[self.pos]),
-                            value: self.content[self.pos].to_string(),
-                            lineno: self.lineno,
-                            line: line.clone(),
-                            start: self.pos,
-                        });
-                        self.pos += 1;
-                    }
                     _ => {
-                        self.pos += 1;
+                        self.lex_symbol(line);
                     }
                 }
             }
@@ -87,13 +77,50 @@ impl Lexer {
     }
 
     #[inline]
-    fn get_symbol_kind(&self, symbol: char) -> Kind {
-        match symbol {
-            '=' => {return Kind::EQUAL;}
-            ';' => {return Kind::SEMICOLON}
-            ' ' => {return Kind::WHITESPACE}
-            _ => {return Kind::NONE}
+    fn lex_symbol(&mut self, line: &String) {
+        let start: usize = self.pos;
+        let kind: Kind;
+        let mut value: String = self.content[self.pos].to_string();
+        match self.content[self.pos] {
+            ';' => {kind = Kind::SEMICOLON;}
+            ' ' => {kind = Kind::WHITESPACE;}
+            '=' => {
+                if self.next() == '=' {
+                    kind = Kind::CONDEQ;
+                    value = "==".to_string();
+                }
+                else {
+                    kind = Kind::EQUAL;
+                }
+            }
+            '>' => {
+                if self.next() == '=' {
+                    kind = Kind::CONDGE;
+                    value = ">=".to_string();
+                }
+                else {
+                    kind = Kind::CONDG;
+                }
+            }
+            '<' => {
+                if self.next() == '=' {
+                    kind = Kind::CONDLE;
+                    value = "<=".to_string();
+                }
+                else {
+                    kind = Kind::CONDL;
+                }
+            }
+            _ => {kind = Kind::NONE;}
         }
+        self.pos += 1;
+        self.tokens.push(Token{
+            kind: kind,
+            value: value,
+            lineno: self.lineno,
+            line: line.clone(),
+            start: start
+        });
     }
     
 }

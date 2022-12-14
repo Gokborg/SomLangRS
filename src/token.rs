@@ -6,6 +6,12 @@ pub enum Kind {
     IDENTIFIER,
     EQUAL,
     SEMICOLON,
+
+    CONDEQ,
+    CONDG,
+    CONDL,
+    CONDGE,
+    CONDLE,
 }
 
 #[derive(Debug, Clone)]
