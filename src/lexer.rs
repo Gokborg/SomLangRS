@@ -25,6 +25,7 @@ impl Lexer {
         while let Some(line) = line_iter.next() {
             self.lineno += 1;
             self.content = line.chars().collect();
+            self.pos = 0;
             while !self.done() {
                 match self.content[self.pos] {
                     '0'..='9' => {
@@ -32,6 +33,16 @@ impl Lexer {
                     }
                     'a'..='z' | 'A'..='Z' => {
                         self.next_while(line, Kind::IDENTIFIER, |x| x.is_ascii_alphanumeric());
+                    }
+                    '=' | ';' | ' ' => {
+                        self.tokens.push(Token {
+                            kind: self.get_symbol_kind(self.content[self.pos]),
+                            value: self.content[self.pos].to_string(),
+                            lineno: self.lineno,
+                            line: line.clone(),
+                            start: self.pos,
+                        });
+                        self.pos += 1;
                     }
                     _ => {
                         self.pos += 1;
@@ -42,10 +53,12 @@ impl Lexer {
         return self.tokens.clone();
     }
 
+    #[inline]
     fn done(&self) -> bool {
         return self.pos >= self.content.len();
     }
 
+    #[inline]
     fn next(&mut self) -> char {
         if self.pos >= self.content.len() {
             return '\0';
@@ -57,6 +70,7 @@ impl Lexer {
         return '\0';
     }
 
+    #[inline]
     fn next_while<F: Fn(char) -> bool>(&mut self, line: &String, kind: Kind, f: F) {
         let mut value: String = self.content.get(self.pos).unwrap().to_string();
         let start: usize = self.pos;
@@ -70,6 +84,16 @@ impl Lexer {
             line: line.clone(),
             start: start,
         });
+    }
+
+    #[inline]
+    fn get_symbol_kind(&self, symbol: char) -> Kind {
+        match symbol {
+            '=' => {return Kind::EQUAL;}
+            ';' => {return Kind::SEMICOLON}
+            ' ' => {return Kind::WHITESPACE}
+            _ => {return Kind::NONE}
+        }
     }
     
 }
