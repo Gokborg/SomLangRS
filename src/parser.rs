@@ -37,12 +37,16 @@ impl <'a> Parser <'a> {
     }
 
     fn parse_expr(&mut self) -> ast::Expression {
-        let current: &Token = &self.content[self.pos];
+        let current: Token = self.content[self.pos].clone();
         match current.kind {
             Kind::NUMBER => {
                 self.pos += 1;
-                return ast::Expression::Number(current.value.parse::<u32>().unwrap(), current.clone())
+                return ast::Expression::Number(current.value.parse::<u32>().unwrap(), current)
             },
+            Kind::IDENTIFIER => {
+                self.pos += 1;
+                return ast::Expression::Identifier(current.value.clone(), current);
+            }
             _ => {
                 panic!("Failed to parse expression");
             }
