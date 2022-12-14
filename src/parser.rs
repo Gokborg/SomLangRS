@@ -1,4 +1,5 @@
 use super::token::{Token, Kind};
+use super::ast;
 
 pub struct Parser <'a> {
     content: &'a [Token],
@@ -13,18 +14,37 @@ impl <'a> Parser <'a> {
         }
     }
 
-    pub fn parse(&mut self) {
+    pub fn parse(&mut self) -> Vec<ast::Statement> {
+        let mut ast_nodes: Vec<ast::Statement> = Vec::new();
         while !self.done() {
             match self.content[self.pos].kind {
                 Kind::LET => {
-                    self.expect(Kind::LET);
-                    self.expect(Kind::IDENTIFIER);
+                    let start: Token = self.expect(Kind::LET);
+                    let varname: String = self.expect(Kind::IDENTIFIER).value;
+                    self.expect(Kind::COLON);
+                    let vartype: ast::VarType = ast::VarType::Normal(self.expect(Kind::IDENTIFIER));
                     self.expect(Kind::EQUAL);
-                    println!("HERE");
+                    let expr: ast::Expression = self.parse_expr();
+                    ast_nodes.push(ast::Statement::Declaration {start: start, name: varname, vartype: vartype, expr: expr});
+                    self.expect(Kind::SEMICOLON);
                 }
                 _ => {
                     self.pos += 1;
                 }
+            }
+        }
+        return ast_nodes;
+    }
+
+    fn parse_expr(&mut self) -> ast::Expression {
+        let current: &Token = &self.content[self.pos];
+        match current.kind {
+            Kind::NUMBER => {
+                self.pos += 1;
+                return ast::Expression::Number(current.value.parse::<u32>().unwrap(), current.clone())
+            },
+            _ => {
+                panic!("Failed to parse expression");
             }
         }
     }
@@ -34,11 +54,11 @@ impl <'a> Parser <'a> {
         return self.pos >= self.content.len();
     }
 
-    fn expect(&mut self, kind: Kind) -> &Token {
+    fn expect(&mut self, kind: Kind) -> Token {
         let current: &Token = self.content.get(self.pos).unwrap();
         if kind == self.content[self.pos].kind {
             self.pos += 1;
-            return current;
+            return current.clone();
         }
         else {
             println!("On line {}:", self.content[self.pos].lineno);

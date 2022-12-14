@@ -3,23 +3,25 @@ use super::token::{Token, Kind};
 pub enum Op {
 }
 
+#[derive(Debug)]
 pub enum VarType {
-    Normal,
-    Array,
-    Pointer,
+    Normal(Token),
+    Array(Token),
+    Pointer(Token),
 }
 
-struct Identifier {token: Token}
-struct Number {token: Token}
-
+#[derive(Debug)]
 pub enum Expression {
-    Identifier(Identifier),
-    Number(Number),
-    BinaryOp(Box<Expression>, Op, Box<Expression>),
+    Number(u32, Token),
+    Identifier(String, Token),
 }
-struct Declaration {vartype: VarType, ident: Identifier, expr: Expression}
-struct Assignment {ident: Identifier, expr: Expression}
+
+#[derive(Debug)]
 pub enum Statement {
-    Declaration(Declaration),
-    Assignment(Assignment)
+    Declaration {
+        start: Token,
+        vartype: VarType,
+        name: String,
+        expr: Expression,
+    },
 }
