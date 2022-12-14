@@ -1,18 +1,26 @@
-use std::collections::HashMap;
+use super::token::{Token, Kind};
 
-struct Parser {
-    content: Vec<Token>,
+pub struct Parser <'a> {
+    content: &'a [Token],
     pos: usize,
 }
 
-impl Parser {
-    pub fn parse(&mut self, tokens: Vec<Token>) {
-        self.content = tokens;
-        self.pos = 0;
+impl <'a> Parser <'a> {
+    pub fn new(tokens: &'a [Token]) -> Self {
+        return Parser {
+            content: tokens,
+            pos: 0
+        }
+    }
+
+    pub fn parse(&mut self) {
         while !self.done() {
             match self.content[self.pos].kind {
-                Kind::IDENTIFIER => {
-
+                Kind::LET => {
+                    self.expect(Kind::LET);
+                    self.expect(Kind::IDENTIFIER);
+                    self.expect(Kind::EQUAL);
+                    println!("HERE");
                 }
                 _ => {
                     self.pos += 1;
@@ -26,7 +34,18 @@ impl Parser {
         return self.pos >= self.content.len();
     }
 
-    fn expect(kind: Kind) -> Token {
-
+    fn expect(&mut self, kind: Kind) -> &Token {
+        let current: &Token = self.content.get(self.pos).unwrap();
+        if kind == self.content[self.pos].kind {
+            self.pos += 1;
+            return current;
+        }
+        else {
+            println!("On line {}:", self.content[self.pos].lineno);
+            println!("\t{}", self.content[self.pos].line);
+            println!("\tExpected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
+            self.pos += 1;
+            panic!();
+        }
     }
 }
