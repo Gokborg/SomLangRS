@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Kind {
     WHITESPACE,
     NUMBER,
@@ -7,7 +7,7 @@ pub enum Kind {
     SEMICOLON,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Token {
     pub kind: Kind,
     pub value: String,
