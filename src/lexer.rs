@@ -61,11 +61,15 @@ impl Lexer {
     }
 
     #[inline]
-    fn next_while<F: Fn(char) -> bool>(&mut self, line: &String, kind: Kind, f: F) {
+    fn next_while<F: Fn(char) -> bool>(&mut self, line: &String, mut kind: Kind, f: F) {
         let mut value: String = self.content.get(self.pos).unwrap().to_string();
         let start: usize = self.pos;
         while f(self.next()) {
             value.push(self.content[self.pos]);
+        }
+        //Check for keywords
+        if value == "let" {
+            kind = Kind::LET;
         }
         self.tokens.push(Token {
             kind: kind, 
@@ -83,6 +87,7 @@ impl Lexer {
         let mut value: String = self.content[self.pos].to_string();
         match self.content[self.pos] {
             ';' => {kind = Kind::SEMICOLON;}
+            ':' => {kind = Kind::COLON}
             ' ' => {kind = Kind::WHITESPACE;}
             '=' => {
                 if self.next() == '=' {

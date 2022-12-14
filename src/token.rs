@@ -6,6 +6,8 @@ pub enum Kind {
     IDENTIFIER,
     EQUAL,
     SEMICOLON,
+    COLON,
+    LET,
 
     CONDEQ,
     CONDG,
