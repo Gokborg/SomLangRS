@@ -1,5 +1,6 @@
 use super::token::{Token, Kind};
 
+#[derive(Debug)]
 pub enum Op {
 }
 
@@ -14,6 +15,7 @@ pub enum VarType {
 pub enum Expression {
     Number(u32, Token),
     Identifier(String, Token),
+    BinaryOp(Box<Expression>, Op, Box<Expression>)
 }
 
 #[derive(Debug)]
