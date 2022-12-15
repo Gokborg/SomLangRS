@@ -1,8 +1,7 @@
-
-
 mod token;
 mod lexer;
 mod ast;
+mod parsers;
 mod parser;
 
 fn main() {
@@ -36,12 +35,12 @@ fn main() {
 
 fn p(node: &ast::Statement, lvl: u32) {
     let mut indent = String::new();
-    for i in 0..lvl {
+    for _i in 0..lvl {
         indent.push('\t');
     }
     match node {
         ast::Statement::Declaration {
-            start, 
+            start: _, 
             vartype, 
             name, 
             expr } => {
@@ -60,7 +59,7 @@ fn p(node: &ast::Statement, lvl: u32) {
 
 fn p_vartype(node: &ast::VarType, lvl: u32) {
     let mut indent = String::new();
-    for i in 0..lvl {
+    for _i in 0..lvl {
         indent.push(' ');
     }
     match node {
@@ -75,7 +74,7 @@ fn p_vartype(node: &ast::VarType, lvl: u32) {
 
 fn p_expr(node: &ast::Expression, lvl: u32) {
     let mut indent = String::new();
-    for i in 0..lvl {
+    for _i in 0..lvl {
         indent.push(' ');
     }
     match node {

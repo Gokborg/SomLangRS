@@ -1,9 +1,10 @@
 use super::token::{Token, Kind};
 use super::ast;
+use super::parsers::decparser;
 
 pub struct Parser <'a> {
-    content: &'a [Token],
-    pos: usize,
+    pub content: &'a [Token],
+    pub pos: usize,
 }
 
 impl <'a> Parser <'a> {
@@ -19,14 +20,7 @@ impl <'a> Parser <'a> {
         while !self.done() {
             match self.content[self.pos].kind {
                 Kind::LET => {
-                    let start: Token = self.expect(Kind::LET);
-                    let varname: String = self.expect(Kind::IDENTIFIER).value;
-                    self.expect(Kind::COLON);
-                    let vartype: ast::VarType = ast::VarType::Normal(self.expect(Kind::IDENTIFIER));
-                    self.expect(Kind::EQUAL);
-                    let expr: ast::Expression = self.parse_expr();
-                    ast_nodes.push(ast::Statement::Declaration {start: start, name: varname, vartype: vartype, expr: expr});
-                    self.expect(Kind::SEMICOLON);
+                    ast_nodes.push(decparser::parse_dec(self));
                 }
                 _ => {
                     self.pos += 1;
@@ -36,29 +30,12 @@ impl <'a> Parser <'a> {
         return ast_nodes;
     }
 
-    fn parse_expr(&mut self) -> ast::Expression {
-        let current: Token = self.content[self.pos].clone();
-        match current.kind {
-            Kind::NUMBER => {
-                self.pos += 1;
-                return ast::Expression::Number(current.value.parse::<u32>().unwrap(), current)
-            },
-            Kind::IDENTIFIER => {
-                self.pos += 1;
-                return ast::Expression::Identifier(current.value.clone(), current);
-            }
-            _ => {
-                panic!("Failed to parse expression");
-            }
-        }
-    }
-
     #[inline]
-    fn done(&self) -> bool {
+    pub fn done(&self) -> bool {
         return self.pos >= self.content.len();
     }
 
-    fn expect(&mut self, kind: Kind) -> Token {
+    pub fn expect(&mut self, kind: Kind) -> Token {
         let current: &Token = self.content.get(self.pos).unwrap();
         if kind == self.content[self.pos].kind {
             self.pos += 1;
