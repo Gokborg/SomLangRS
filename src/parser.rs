@@ -35,6 +35,19 @@ impl <'a> Parser <'a> {
         return self.pos >= self.content.len();
     }
 
+    #[inline]
+    pub fn current(&self) -> Token {
+        return self.content[self.pos].clone();
+    }
+
+    pub fn next(&mut self) -> Option<Token> {
+        self.pos += 1;
+        if self.done() {
+            return Option::None;
+        }
+        return Some(self.content[self.pos].clone());
+    }
+
     pub fn expect(&mut self, kind: Kind) -> Token {
         let current: &Token = self.content.get(self.pos).unwrap();
         if kind == self.content[self.pos].kind {
@@ -44,7 +57,7 @@ impl <'a> Parser <'a> {
         else {
             println!("On line {}:", self.content[self.pos].lineno);
             println!("\t{}", self.content[self.pos].line);
-            println!("\tExpected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
+            println!("Expected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
             self.pos += 1;
             panic!();
         }

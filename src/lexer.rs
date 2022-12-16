@@ -87,8 +87,12 @@ impl Lexer {
         let mut value: String = self.content[self.pos].to_string();
         match self.content[self.pos] {
             ';' => {kind = Kind::SEMICOLON;}
-            ':' => {kind = Kind::COLON}
+            ':' => {kind = Kind::COLON;}
             ' ' => {kind = Kind::WHITESPACE;}
+            '+' => {kind = Kind::PLUS;}
+            '-' => {kind = Kind::MINUS;}
+            '*' => {kind = Kind::ASTERIK;}
+            '/' => {kind = Kind::SLASH;}
             '=' => {
                 if self.next() == '=' {
                     kind = Kind::CONDEQ;

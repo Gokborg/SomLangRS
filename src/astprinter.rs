@@ -9,7 +9,7 @@ pub fn print_ast(nodes: &Vec<ast::Statement>) {
 fn p(node: &ast::Statement, lvl: u32) {
     let mut indent = String::new();
     for _i in 0..lvl {
-        indent.push('\t');
+        indent.push(' ');
     }
     match node {
         ast::Statement::Declaration {
@@ -52,13 +52,17 @@ fn p_expr(node: &ast::Expression, lvl: u32) {
     }
     match node {
         ast::Expression::Number(num, _) => {
-            println!("{}├Number({})", indent, num);
+            println!("{}{}-Number({})", indent, lvl, num);
         }
         ast::Expression::Identifier(ident, _) => {
-            println!("{}├Identifier({})", indent, ident);
+            println!("{}{}-Identifier({})", indent, lvl, ident);
+        }
+        ast::Expression::BinaryOp(expr1, op, expr2) => {
+            println!("{}{}-Op({:?})", indent, lvl, op);
+            p_expr(expr1, lvl+1);
+            p_expr(expr2, lvl+1);
         }
         _ => {
-
         }
     }
 }

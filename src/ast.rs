@@ -2,6 +2,10 @@ use super::token::{Token};
 
 #[derive(Debug)]
 pub enum Op {
+    Add(Token),
+    Sub(Token),
+    Mult(Token),
+    Div(Token)
 }
 
 #[derive(Debug)]

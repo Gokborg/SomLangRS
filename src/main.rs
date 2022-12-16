@@ -7,9 +7,10 @@ mod astprinter;
 
 fn main() {
     let mut lexer = lexer::Lexer::new();
+    
     let mut tokens = lexer.lex(vec![
-        "let a: uint = 3;".to_string(),
-        "let a: uint = b;".to_string(),
+        "let a: u8 = 1 + 2 * 3;".to_string(),
+        "let a: u8 = b;".to_string(),
     ]);
     //Filters out whitespaces
     tokens = tokens.into_iter().filter(|x| x.kind != token::Kind::WHITESPACE).collect();

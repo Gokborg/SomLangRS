@@ -9,6 +9,10 @@ pub enum Kind {
     EQUAL,
     SEMICOLON,
     COLON,
+    PLUS,
+    MINUS,
+    ASTERIK,
+    SLASH,
     LET,
 
     CONDEQ,
@@ -18,7 +22,7 @@ pub enum Kind {
     CONDLE,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Token {
     pub kind: Kind,
     pub value: String,
@@ -33,3 +37,8 @@ impl fmt::Display for Token {
     }
 }
 
+impl fmt::Debug for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}('{}' line-{} index-{})", self.kind, self.value, self.lineno, self.start)
+    }
+}
