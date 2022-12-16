@@ -1,4 +1,4 @@
-use super::token::{Token, Kind};
+use super::token::{Token};
 
 #[derive(Debug)]
 pub enum Op {

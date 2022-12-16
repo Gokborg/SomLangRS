@@ -1,3 +1,5 @@
+use std::fmt;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Kind {
     NONE,
@@ -23,5 +25,11 @@ pub struct Token {
     pub lineno: u32,
     pub line: String,
     pub start: usize,
+}
+
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}('{}' line-{} index-{})", self.kind, self.value, self.lineno, self.start)
+    }
 }
 
