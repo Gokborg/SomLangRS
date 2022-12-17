@@ -13,7 +13,7 @@ fn p(node: &ast::Statement, lvl: u32) {
     }
     match node {
         ast::Statement::Declaration {
-            start: _, 
+            span: _, 
             vartype, 
             name, 
             expr } => {
@@ -33,8 +33,8 @@ fn p_vartype(node: &ast::VarType, lvl: u32) {
         indent.push(' ');
     }
     match node {
-        ast::VarType::Normal(tok) => {
-            println!("{}├VarType({})", indent, tok.value);
+        ast::VarType::Normal(span, value) => {
+            println!("{}├VarType({})", indent, value);
         }
         _ => {
 
@@ -48,13 +48,13 @@ fn p_expr(node: &ast::Expression, lvl: u32) {
         indent.push(' ');
     }
     match node {
-        ast::Expression::Number(num, _) => {
-            println!("{}{}-Number({})", indent, lvl, num);
+        ast::Expression::Number(span, value) => {
+            println!("{}{}-Number({})", indent, lvl, value);
         }
-        ast::Expression::Identifier(ident, _) => {
+        ast::Expression::Identifier(span, ident) => {
             println!("{}{}-Identifier({})", indent, lvl, ident);
         }
-        ast::Expression::BinaryOp(expr1, op, expr2) => {
+        ast::Expression::BinaryOp(span, expr1, op, expr2) => {
             println!("{}{}-Op({:?})", indent, lvl, op);
             p_expr(expr1, lvl+1);
             p_expr(expr2, lvl+1);

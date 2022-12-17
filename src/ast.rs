@@ -1,31 +1,31 @@
-use super::token::{Token};
+use crate::span::Span;
 
 #[derive(Debug)]
 pub enum Op {
-    Add(Token),
-    Sub(Token),
-    Mult(Token),
-    Div(Token)
+    Add(Span),
+    Sub(Span),
+    Mult(Span),
+    Div(Span)
 }
 
 #[derive(Debug)]
 pub enum VarType {
-    Normal(Token),
-    Array(Token),
-    Pointer(Token),
+    Normal(Span, String),
+    Array(Span, String),
+    Pointer(Span, String),
 }
 
 #[derive(Debug)]
 pub enum Expression {
-    Number(u32, Token),
-    Identifier(String, Token),
-    BinaryOp(Box<Expression>, Op, Box<Expression>)
+    Number(Span, u32),
+    Identifier(Span, String),
+    BinaryOp(Span, Box<Expression>, Op, Box<Expression>)
 }
 
 #[derive(Debug)]
 pub enum Statement {
     Declaration {
-        start: Token,
+        span: Span,
         vartype: VarType,
         name: String,
         expr: Expression,

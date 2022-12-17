@@ -75,7 +75,6 @@ impl Lexer {
             kind: kind, 
             value: value,
             lineno: self.lineno,
-            line: line.clone(),
             start: start,
         });
     }
@@ -127,7 +126,6 @@ impl Lexer {
             kind: kind,
             value: value,
             lineno: self.lineno,
-            line: line.clone(),
             start: start
         });
     }

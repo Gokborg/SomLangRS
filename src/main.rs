@@ -5,6 +5,8 @@ mod parsers;
 mod parser;
 mod astprinter;
 mod codegen;
+mod span;
+mod errorcontext;
 
 fn main() {
     let mut lexer = lexer::Lexer::new();

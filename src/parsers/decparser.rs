@@ -2,14 +2,16 @@ use crate::token::{Token, Kind};
 use crate::parser::{Parser};
 use crate::ast;
 use super::exprparser;
+use crate::span;
 
 pub fn parse_dec(parser: &mut Parser) -> ast::Statement {
     let start: Token = parser.expect(Kind::LET);
     let varname: String = parser.expect(Kind::IDENTIFIER).value;
     parser.expect(Kind::COLON);
-    let vartype: ast::VarType = ast::VarType::Normal(parser.expect(Kind::IDENTIFIER));
     parser.expect(Kind::EQUAL);
     let expr: ast::Expression = exprparser::parse_expr(parser);
+    let span = span::Span::from_tokens(&start, &parser.current());
     parser.expect(Kind::SEMICOLON);
-    return ast::Statement::Declaration {start: start, name: varname, vartype: vartype, expr: expr};
+    let vartype = ast::VarType::Normal(span, parser.expect(Kind::IDENTIFIER).value);
+    return ast::Statement::Declaration {span: span, name: varname, vartype: vartype, expr: expr};
 }

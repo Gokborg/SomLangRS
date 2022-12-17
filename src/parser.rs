@@ -56,7 +56,7 @@ impl <'a> Parser <'a> {
         }
         else {
             println!("On line {}:", self.content[self.pos].lineno);
-            println!("\t{}", self.content[self.pos].line);
+            //println!("\t{}", self.content[self.pos].line);
             println!("Expected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
             self.pos += 1;
             panic!();

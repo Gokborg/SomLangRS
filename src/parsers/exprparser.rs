@@ -1,6 +1,7 @@
 use crate::token::{Token, Kind};
 use crate::parser::{Parser};
 use crate::ast;
+use crate::span;
 
 pub fn parse_expr(parser: &mut Parser) -> ast::Expression {
     return parse_expr_l3(parser);
@@ -27,11 +28,11 @@ fn parse_expr_l1(parser: &mut Parser) -> ast::Expression {
     match current.kind {
         Kind::NUMBER => {
             parser.pos += 1;
-            return ast::Expression::Number(current.value.parse::<u32>().unwrap(), current)
+            return ast::Expression::Number(span::Span::from_token(&current), current.value.parse::<u32>().unwrap())
         },
         Kind::IDENTIFIER => {
             parser.pos += 1;
-            return ast::Expression::Identifier(current.value.clone(), current);
+            return ast::Expression::Identifier(span::Span::from_token(&current), current.value.clone());
         }
         _ => {
             panic!("Failed to parse expression");
@@ -40,21 +41,23 @@ fn parse_expr_l1(parser: &mut Parser) -> ast::Expression {
 }
 
 fn generic_parse_binop<F: Fn(&mut Parser) -> ast::Expression>(parser: &mut Parser, f: F, kinds: &[Kind]) -> ast::Expression {
+    let start_tok: &Token = &parser.current();
     let mut expr1: ast::Expression = f(parser);
     while kinds.contains(&parser.current().kind) {
         let op: ast::Op;
+        let op_span = span::Span::from_token(&parser.current());
         match parser.current().kind {
             Kind::PLUS => {
-                op = ast::Op::Add(parser.current());
+                op = ast::Op::Add(op_span);
             }
             Kind::MINUS => {
-                op = ast::Op::Sub(parser.current());
+                op = ast::Op::Sub(op_span);
             }
             Kind::ASTERIK => {
-                op = ast::Op::Mult(parser.current());
+                op = ast::Op::Mult(op_span);
             }
             Kind::SLASH => {
-                op = ast::Op::Div(parser.current());
+                op = ast::Op::Div(op_span);
             }
             _ => {
                 panic!("Unknown operator: {}", parser.current());
@@ -62,7 +65,9 @@ fn generic_parse_binop<F: Fn(&mut Parser) -> ast::Expression>(parser: &mut Parse
         }
         parser.next();
         let expr2: ast::Expression = f(parser);
-        expr1 = ast::Expression::BinaryOp(Box::new(expr1), op, Box::new(expr2))
+        let end_tok: &Token = &parser.current();
+        let bin_span = span::Span::from_tokens(start_tok, end_tok);
+        expr1 = ast::Expression::BinaryOp(bin_span, Box::new(expr1), op, Box::new(expr2));
     }
     return expr1;
 }

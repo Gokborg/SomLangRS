@@ -183,9 +183,9 @@ impl Allocator {
     fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<String, Vec<u32>>) {
         for node in ast_nodes {
             match node {
-                ast::Statement::Declaration { start, vartype: _, name, expr } => {
-                    self.put_range(name, start.lineno, ranges);
-                    self.gen_expr_ranges(expr, start.lineno, ranges);
+                ast::Statement::Declaration { span, vartype: _, name, expr } => {
+                    self.put_range(name, span.start().lineno, ranges);
+                    self.gen_expr_ranges(expr, span.start().lineno, ranges);
                 }
             }
         }
@@ -194,12 +194,12 @@ impl Allocator {
 
     fn gen_expr_ranges(&mut self, expr: &ast::Expression, lineno: u32, ranges: &mut HashMap<String, Vec<u32>>) {
         match expr {
-            ast::Expression::BinaryOp(expr1, _op, expr2) => {
+            ast::Expression::Identifier(span, name) => {
+                self.put_range(name, span.start().lineno, ranges);
+            }
+            ast::Expression::BinaryOp(_, expr1, _, expr2) => {
                 self.gen_expr_ranges(&(*expr1), lineno, ranges);
                 self.gen_expr_ranges(&(*expr2), lineno, ranges);
-            }
-            ast::Expression::Identifier(name, _tok) => {
-                self.put_range(name, lineno, ranges);
             }
             _ => {
 
