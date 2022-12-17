@@ -1,0 +1,26 @@
+fn double(a: u8, b: u8) -> u8 {
+    
+}
+
+fn a(a: u8) -> u8 {
+    
+}
+
+class T {
+    da: u8;
+    b: u8;
+
+    pub fn a() {
+
+    }
+}
+
+
+fn hello(greeting: String, name: string) {
+    ...
+}
+
+hello(greeting = "hi", name = "gokborg");
+hello("hi", "gokborg");
+
+let ok: fn(String, String) = hello;

@@ -29,13 +29,13 @@ impl Lexer {
             while !self.done() {
                 match self.content[self.pos] {
                     '0'..='9' => {
-                        self.next_while(line, Kind::NUMBER, |x| x.is_ascii_digit());
+                        self.next_while(Kind::NUMBER, |x| x.is_ascii_digit());
                     }
                     'a'..='z' | 'A'..='Z' => {
-                        self.next_while(line, Kind::IDENTIFIER, |x| x.is_ascii_alphanumeric());
+                        self.next_while(Kind::IDENTIFIER, |x| x.is_ascii_alphanumeric());
                     }
                     _ => {
-                        self.lex_symbol(line);
+                        self.lex_symbol();
                     }
                 }
             }
@@ -61,7 +61,7 @@ impl Lexer {
     }
 
     #[inline]
-    fn next_while<F: Fn(char) -> bool>(&mut self, line: &String, mut kind: Kind, f: F) {
+    fn next_while<F: Fn(char) -> bool>(&mut self, mut kind: Kind, f: F) {
         let mut value: String = self.content.get(self.pos).unwrap().to_string();
         let start: usize = self.pos;
         while f(self.next()) {
@@ -80,7 +80,7 @@ impl Lexer {
     }
 
     #[inline]
-    fn lex_symbol(&mut self, line: &String) {
+    fn lex_symbol(&mut self) {
         let start: usize = self.pos;
         let kind: Kind;
         let mut value: String = self.content[self.pos].to_string();

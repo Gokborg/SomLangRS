@@ -11,8 +11,16 @@ pub enum Op {
 #[derive(Debug)]
 pub enum VarType {
     Normal(Span, String),
-    Array(Span, String),
-    Pointer(Span, String),
+    Array(Span, Box<VarType>, Option<usize>),
+    Pointer(Span, Box<VarType>),
+    Func(Span, Box<VarType>, Vec<ArgDecl>)
+}
+
+#[derive(Debug)]
+pub struct ArgDecl {
+    span: Span,
+    name: String,
+    kind: VarType
 }
 
 #[derive(Debug)]
@@ -27,6 +35,11 @@ pub enum Statement {
     Declaration {
         span: Span,
         vartype: VarType,
+        name: String,
+        expr: Expression,
+    },
+    Assignment {
+        span: Span,
         name: String,
         expr: Expression,
     },

@@ -1,6 +1,6 @@
 use super::token::{Token, Kind};
 use super::ast;
-use super::parsers::decparser;
+use super::parsers;
 
 pub struct Parser <'a> {
     pub content: &'a [Token],
@@ -20,7 +20,10 @@ impl <'a> Parser <'a> {
         while !self.done() {
             match self.content[self.pos].kind {
                 Kind::LET => {
-                    ast_nodes.push(decparser::parse_dec(self));
+                    ast_nodes.push(parsers::decparser::parse_dec(self));
+                }
+                Kind::IDENTIFIER => {
+                    ast_nodes.push(parsers::assignparser::parse_assign(self));
                 }
                 _ => {
                     self.pos += 1;

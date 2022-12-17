@@ -1,6 +1,7 @@
-use std::collections::HashMap;
-use crate::ast;
+use std::collections::{HashMap, BTreeMap};
+use linked_hash_map::LinkedHashMap;
 
+use crate::ast;
 use super::asm;
 
 struct RegisterAllocator {
@@ -33,13 +34,12 @@ impl RegisterAllocator {
     }
 }
 
-
 pub struct Allocator {
-    mem: Vec<bool>, 
-    allocs: HashMap<u32, HashMap<String, usize>>,
+    mem: Vec<bool>,
+    allocs: BTreeMap<u32, LinkedHashMap<String, usize>>,
 
     //lineno : registerallocator
-    reg_allocs: HashMap<u32, RegisterAllocator>,
+    reg_allocs: BTreeMap<u32, RegisterAllocator>,
 
     //varname : memory address
     mem_allocs: HashMap<String, u32>,
@@ -51,8 +51,8 @@ impl Allocator {
     pub fn new(max_regs: u32) -> Self {
         Allocator {
             mem: vec![false; 512],
-            allocs: HashMap::new(),
-            reg_allocs: HashMap::new(),
+            allocs: BTreeMap::new(),
+            reg_allocs: BTreeMap::new(),
             mem_allocs: HashMap::new(),
             max_regvars: if max_regs > 2 {max_regs - 2} else {0},
             max_regs: max_regs,
@@ -124,6 +124,9 @@ impl Allocator {
         let mut ranges: HashMap<String, Vec<u32>> = HashMap::new();
         self.gen_ranges(ast_nodes, &mut ranges);
         println!("{:?}", ranges);
+        
+
+        let alloc_lines: Vec<u32>;
 
         for (varname, activelines) in ranges {
             let start_range = *activelines.get(0).unwrap_or(&0);
@@ -144,7 +147,8 @@ impl Allocator {
                 }
                 if let Some(varrecord) = self.allocs.get_mut(&i) {
                     match varrecord.get(&varname) {
-                        Some(_) => {}
+                        Some(_) => {
+                        }
                         None => {
                             let var_mem = self.mem_allocs.get(&varname);
                             if var_mem == None {
@@ -159,7 +163,7 @@ impl Allocator {
                 }
                 else {
                     let var_mem = self.mem_allocs.get(&varname);
-                    let mut varrecord: HashMap<String, usize> = HashMap::new();
+                    let mut varrecord: LinkedHashMap<String, usize> = LinkedHashMap::new();
                     if var_mem == None {
                         self.mem_allocs.insert(varname.clone(), self.mem.iter().position(|&x| x == false).unwrap() as u32);
                     }
@@ -177,7 +181,6 @@ impl Allocator {
                 println!("\t{}->R{}", varname, reg);
             }
         }
-
     }
 
     fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<String, Vec<u32>>) {
@@ -185,8 +188,10 @@ impl Allocator {
             match node {
                 ast::Statement::Declaration { span, vartype: _, name, expr } => {
                     self.put_range(name, span.start().lineno, ranges);
+                    println!("{:?}", ranges);
                     self.gen_expr_ranges(expr, span.start().lineno, ranges);
                 }
+                ast::Statement::Assignment { span, name, expr } => todo!(),
             }
         }
     }

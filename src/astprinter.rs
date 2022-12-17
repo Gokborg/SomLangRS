@@ -24,6 +24,13 @@ fn p(node: &ast::Statement, lvl: u32) {
                 println!("{}└Expression:", t);
                 p_expr(expr, lvl+2);
         }
+        ast::Statement::Assignment { span, name, expr } => {
+            println!("{}Assignment", indent);
+            let t = indent + " ";
+            println!("{}├Name({})", t , name);
+            println!("{}└Expression:", t);
+            p_expr(expr, lvl+2);
+        },
     }
 }
 

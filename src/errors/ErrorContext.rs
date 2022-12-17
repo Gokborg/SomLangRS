@@ -1,6 +1,3 @@
-use crate::span::Span;
-
-#[derive(Debug)]
 pub struct ErrorContext {
     errors: Vec<Error>
 }
@@ -11,12 +8,11 @@ impl ErrorContext {
     }
 }
 
-#[derive(Debug)]
-pub enum ErrorKind {
-    UndefinedVariable
+
+pub struct ErrorKind {
+    
 }
-#[derive(Debug)]
+
 pub struct Error {
-    kind: ErrorKind,
-    span: Span
+    span: Span,
 }

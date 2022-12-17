@@ -58,6 +58,7 @@ impl GetSpan for ast::VarType {
             Self::Normal(span, ..) => span,
             Self::Array(span, ..) => span,
             Self::Pointer(span, ..) => span,
+            Self::Func(span, ..) => span,
         }
     }
 }
@@ -76,6 +77,8 @@ impl GetSpan for ast::Statement {
     fn span(&self) -> &Span {
         match self {
             Self::Declaration { span, ..} => span,
+            ast::Statement::Declaration { span, vartype, name, expr } => todo!(),
+            ast::Statement::Assignment { span, name, expr } => todo!(),
         }
     }
 }
