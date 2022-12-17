@@ -4,13 +4,14 @@ mod ast;
 mod parsers;
 mod parser;
 mod astprinter;
+mod codegen;
 
 fn main() {
     let mut lexer = lexer::Lexer::new();
     
     let mut tokens = lexer.lex(vec![
-        "let a: u8 = 1 + 2 * 3;".to_string(),
-        "let a: u8 = b;".to_string(),
+        "let a: u8 = 5;".to_string(),
+        "let b: u8 = a;".to_string(),
     ]);
     //Filters out whitespaces
     tokens = tokens.into_iter().filter(|x| x.kind != token::Kind::WHITESPACE).collect();
@@ -31,5 +32,12 @@ fn main() {
     // }
 
     astprinter::print_ast(&ast_nodes);
+
+    let mut codegen = codegen::CodeGen::new();
+    codegen.gen(&ast_nodes);
+    println!("\nASM");
+    println!("==================================");
+    println!("{}", codegen.asm);
+
 }
 

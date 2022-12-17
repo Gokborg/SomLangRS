@@ -39,6 +39,6 @@ impl fmt::Display for Token {
 
 impl fmt::Debug for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}('{}' line-{} index-{})", self.kind, self.value, self.lineno, self.start)
+        return write!(f, "{:?}('{}' line-{} index-{})", self.kind, self.value, self.lineno, self.start);
     }
 }

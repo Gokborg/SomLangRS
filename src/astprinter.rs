@@ -24,9 +24,6 @@ fn p(node: &ast::Statement, lvl: u32) {
                 println!("{}└Expression:", t);
                 p_expr(expr, lvl+2);
         }
-        _ => {
-
-        }
     }
 }
 
@@ -61,8 +58,6 @@ fn p_expr(node: &ast::Expression, lvl: u32) {
             println!("{}{}-Op({:?})", indent, lvl, op);
             p_expr(expr1, lvl+1);
             p_expr(expr2, lvl+1);
-        }
-        _ => {
         }
     }
 }
