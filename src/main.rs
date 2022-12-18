@@ -16,13 +16,13 @@ use crate::{typechecking::TypeChecker, errorcontext::ErrorContext};
 
 fn main() {
     // create target folder
-    Path::new("somoutput");
+    std::fs::create_dir("somoutput").unwrap_or(println!("Unable to create rust compile directory"));
 
     let mut lexer = lexer::Lexer::new();
     
     let mut tokens = lexer.lex(vec![
         "let a: u8 = 5;".to_string(),
-        "let b: u8 = a;".to_string(),
+        "a = 6;".to_string(),
     ]);
     let mut error_context = ErrorContext::new();
 

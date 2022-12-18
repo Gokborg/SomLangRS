@@ -33,7 +33,11 @@ impl CodeGen {
                 self.gen_expr(expr, Some(var_reg)); //value should be in var reg
                 self.allocator.done_with_var(&mut self.asm, span.start().lineno, name, var_reg);
             },
-            ast::Statement::Assignment { span, name, expr } => todo!(),
+            ast::Statement::Assignment { span, name, expr } => {
+                let var_reg = self.allocator.get_var(span.start().lineno, &name);
+                self.gen_expr(expr, Some(var_reg)); //value should be in var reg
+                self.allocator.done_with_var(&mut self.asm, span.start().lineno, name, var_reg);
+            },
         }
     }
 

@@ -188,10 +188,12 @@ impl Allocator {
             match node {
                 ast::Statement::Declaration { span, vartype: _, name, expr } => {
                     self.put_range(name, span.start().lineno, ranges);
-                    println!("{:?}", ranges);
                     self.gen_expr_ranges(expr, span.start().lineno, ranges);
                 }
-                ast::Statement::Assignment { span, name, expr } => todo!(),
+                ast::Statement::Assignment { span, name, expr } => {
+                    self.put_range(name, span.start().lineno, ranges);
+                    self.gen_expr_ranges(expr, span.start().lineno, ranges);
+                },
             }
         }
     }

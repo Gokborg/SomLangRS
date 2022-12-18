@@ -24,7 +24,7 @@ impl RustGenerator {
             ast::Statement::Declaration {span, vartype, name, expr } => {
                 match vartype {
                     ast::VarType::Normal(span, vartype_str) => {
-                        return format!("let {}: {} = {};", name, vartype_str, self.gen_expr(expr));
+                        return format!("let mut {}: {} = {};", name, vartype_str, self.gen_expr(expr));
                     }
                     _ => {
                         todo!();
@@ -32,7 +32,7 @@ impl RustGenerator {
                 }
             },
             ast::Statement::Assignment { span, name, expr } => {
-                todo!()
+                return format!("{} = {};", name, self.gen_expr(expr));
             },
         }
     }
