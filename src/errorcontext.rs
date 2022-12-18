@@ -13,10 +13,13 @@ impl ErrorContext {
 
 #[derive(Debug)]
 pub enum ErrorKind {
-    UndefinedVariable
+    UndefinedVariable,
+    UnexpectedToken,
 }
+
 #[derive(Debug)]
 pub struct Error {
     kind: ErrorKind,
+    filename: String,
     span: Span
 }
