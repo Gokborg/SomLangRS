@@ -40,6 +40,7 @@ impl Lexer {
                 }
             }
         }
+        self.tokens.push(Token { kind: Kind::EOF, value: String::new(), lineno: self.lineno, start: self.pos});
         return self.tokens.clone();
     }
 
@@ -71,6 +72,9 @@ impl Lexer {
         if value == "let" {
             kind = Kind::LET;
         }
+        else if value == "if" {
+            kind = Kind::IF;
+        }
         self.tokens.push(Token {
             kind: kind, 
             value: value,
@@ -85,6 +89,8 @@ impl Lexer {
         let kind: Kind;
         let mut value: String = self.content[self.pos].to_string();
         match self.content[self.pos] {
+            '{' => {kind = Kind::OPENBRACE}
+            '}' => {kind = Kind::CLOSEBRACE}
             ';' => {kind = Kind::SEMICOLON;}
             ':' => {kind = Kind::COLON;}
             ' ' => {kind = Kind::WHITESPACE;}

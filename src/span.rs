@@ -48,6 +48,11 @@ impl GetSpan for ast::Op {
             Self::Sub(span) => span,
             Self::Mult(span) => span,
             Self::Div(span) => span,
+            Self::CondEq(span) => span,
+            Self::CondG(span) => span,
+            Self::CondGEq(span) => span,
+            Self::CondL(span) => span,
+            Self::CondLEq(span) => span,
         }
     }
 }
@@ -77,8 +82,9 @@ impl GetSpan for ast::Statement {
     fn span(&self) -> &Span {
         match self {
             Self::Declaration { span, ..} => span,
-            ast::Statement::Declaration { span, vartype, name, expr } => todo!(),
-            ast::Statement::Assignment { span, name, expr } => todo!(),
+            Self::Assignment { span, ..} => span,
+            Self::Body { span, ..} => span,
+            Self::IfStatement { span, ..} => span,
         }
     }
 }

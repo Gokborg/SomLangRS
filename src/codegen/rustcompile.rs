@@ -21,9 +21,9 @@ impl RustGenerator {
 
     pub fn gen_stmt(&mut self, node: &ast::Statement) -> String {
         match node {
-            ast::Statement::Declaration {span, vartype, name, expr } => {
+            ast::Statement::Declaration {span: _, vartype, name, expr } => {
                 match vartype {
-                    ast::VarType::Normal(span, vartype_str) => {
+                    ast::VarType::Normal(_span, vartype_str) => {
                         return format!("let mut {}: {} = {};", name, vartype_str, self.gen_expr(expr));
                     }
                     _ => {
@@ -31,18 +31,28 @@ impl RustGenerator {
                     }
                 }
             },
-            ast::Statement::Assignment { span, name, expr } => {
+            ast::Statement::Assignment {span: _, name, expr } => {
                 return format!("{} = {};", name, self.gen_expr(expr));
+            },
+            ast::Statement::Body { content, span: _ } => {
+                let mut result: String = String::new();
+                for stmt in content {
+                    result.push_str(&self.gen_stmt(&(*stmt)));
+                }
+                return format!("{{\n{}\n}}", result);
+            },
+            ast::Statement::IfStatement {span: _, cond, body, child: _ } => {
+                return format!("if {} {}", self.gen_expr(cond), self.gen_stmt(&(*body)));
             },
         }
     }
 
     pub fn gen_expr(&mut self, node: &ast::Expression) -> String {
         match node {
-            ast::Expression::Number(span, value) => {
+            ast::Expression::Number(_span, value) => {
                 return format!("{}", value);
             },
-            ast::Expression::Identifier(span, value) => {
+            ast::Expression::Identifier(_span, value) => {
                 return value.clone();
             },
             ast::Expression::BinaryOp(_span, expr1, op, expr2) => {
@@ -52,6 +62,11 @@ impl RustGenerator {
                     ast::Op::Sub(_) => op_str = "-",
                     ast::Op::Mult(_) => op_str = "*",
                     ast::Op::Div(_) => op_str = "/",
+                    ast::Op::CondEq(_) => op_str = "==",
+                    ast::Op::CondG(_) => op_str = ">",
+                    ast::Op::CondGEq(_) => op_str = ">=",
+                    ast::Op::CondL(_) => op_str = "<",
+                    ast::Op::CondLEq(_) => op_str = "<=",
                 }
                 return self.gen_expr(expr1) + op_str + &self.gen_expr(expr2)
             },

@@ -14,6 +14,10 @@ pub enum Kind {
     ASTERIK,
     SLASH,
     LET,
+    IF,
+    OPENBRACE,
+    CLOSEBRACE,
+    EOF,
 
     CONDEQ,
     CONDG,

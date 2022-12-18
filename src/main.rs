@@ -22,7 +22,8 @@ fn main() {
     
     let mut tokens = lexer.lex(vec![
         "let a: u8 = 5;".to_string(),
-        "a = 6;".to_string(),
+        "if a > 0 {let a: u8 = 1; let b: u8 = 5;}".to_string(),
+        "".to_string(),
     ]);
     let mut error_context = ErrorContext::new();
 
@@ -49,12 +50,14 @@ fn main() {
 
     astprinter::print_ast(&ast_nodes);
 
-    let mut codegen = codegen::CodeGen::new();
-    codegen.gen(&ast_nodes);
-    println!("\nASM");
-    println!("==================================");
-    println!("{}", codegen.asm);
+    // let mut codegen = codegen::CodeGen::new();
+    // codegen.gen(&ast_nodes);
+    // println!("\nASM");
+    // println!("==================================");
+    // println!("{}", codegen.asm);
 
+    println!("\nRUST COMPILED OUTPUT");
+    println!("==================================");
     codegen::rustcompile::RustGenerator::gen(&ast_nodes)
     
 }

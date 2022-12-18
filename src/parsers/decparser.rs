@@ -14,5 +14,10 @@ pub fn parse_dec(parser: &mut Parser) -> ast::Statement {
     let span = span::Span::from_tokens(&start, &parser.current());
     parser.expect(Kind::SEMICOLON);
     let vartype = ast::VarType::Normal(span, vartype_str);
-    return ast::Statement::Declaration {span: span, name: varname, vartype: vartype, expr: expr};
+    return ast::Statement::Declaration {
+        span: span, 
+        name: varname, 
+        vartype: vartype, 
+        expr: expr
+    };
 }

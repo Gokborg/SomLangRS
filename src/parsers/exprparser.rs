@@ -4,9 +4,16 @@ use crate::ast;
 use crate::span;
 
 pub fn parse_expr(parser: &mut Parser) -> ast::Expression {
-    return parse_expr_l3(parser);
+    return parse_expr_l4(parser);
 }
 
+fn parse_expr_l4(parser: &mut Parser) -> ast::Expression {
+    return generic_parse_binop(
+        parser, 
+        parse_expr_l3,
+        &[Kind::CONDEQ, Kind::CONDG, Kind::CONDGE, Kind::CONDL, Kind::CONDLE]
+    );
+}
 fn parse_expr_l3(parser: &mut Parser) -> ast::Expression {
     return generic_parse_binop(
         parser, 
@@ -58,6 +65,21 @@ fn generic_parse_binop<F: Fn(&mut Parser) -> ast::Expression>(parser: &mut Parse
             }
             Kind::SLASH => {
                 op = ast::Op::Div(op_span);
+            }
+            Kind::CONDEQ => {
+                op = ast::Op::CondEq(op_span);
+            }
+            Kind::CONDG => {
+                op = ast::Op::CondG(op_span);
+            }
+            Kind::CONDGE => {
+                op = ast::Op::CondGEq(op_span);
+            }
+            Kind::CONDL => {
+                op = ast::Op::CondL(op_span);
+            }
+            Kind::CONDLE => {
+                op = ast::Op::CondLEq(op_span);
             }
             _ => {
                 panic!("Unknown operator: {}", parser.current());

@@ -5,7 +5,12 @@ pub enum Op {
     Add(Span),
     Sub(Span),
     Mult(Span),
-    Div(Span)
+    Div(Span),
+    CondEq(Span),
+    CondG(Span),
+    CondGEq(Span),
+    CondL(Span),
+    CondLEq(Span),
 }
 
 #[derive(Debug)]
@@ -42,5 +47,15 @@ pub enum Statement {
         span: Span,
         name: String,
         expr: Expression,
+    },
+    Body {
+        span: Span,
+        content: Vec<Box<Statement>>
+    },
+    IfStatement {
+        span: Span,
+        cond: Expression,
+        body: Box<Statement>,
+        child: Box<Option<Statement>>,
     },
 }

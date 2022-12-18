@@ -11,5 +11,9 @@ pub fn parse_assign(parser: &mut Parser) -> ast::Statement {
     let expr: ast::Expression = exprparser::parse_expr(parser);
     let span = span::Span::from_tokens(&start, &parser.current());
     parser.expect(Kind::SEMICOLON);
-    return ast::Statement::Assignment {span: span, name: varname, expr: expr};
+    return ast::Statement::Assignment {
+        span: span, 
+        name: varname, 
+        expr: expr
+    };
 }
