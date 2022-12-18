@@ -21,11 +21,11 @@ impl RustGenerator {
 
     pub fn gen_stmt(&mut self, node: &ast::Statement) -> String {
         match node {
-            ast::Statement::Declaration {span: _, vartype, name, expr } => {
+            ast::Statement::Declaration {span: _, vartype, target, expr } => {
                 match vartype {
                     ast::VarType::Normal(_span, vartype_str) => {
                         if vartype_str == "uint" {
-                            return format!("let mut {}: {} = {};", name, "u8", self.gen_expr(expr));
+                            return format!("let mut {}: {} = {};", &target.name, "u8", self.gen_expr(expr));
                         }
                         panic!("Only support uint for rust compilation! do not use other types!");
                     }
@@ -34,8 +34,15 @@ impl RustGenerator {
                     }
                 }
             },
-            ast::Statement::Assignment {span: _, name, expr } => {
-                return format!("{} = {};", name, self.gen_expr(expr));
+            ast::Statement::Assignment {span: _, target, expr } => {
+                match target {
+                    ast::Expression::Identifier(identifier) => {
+                        return format!("{} = {};", &identifier.name, self.gen_expr(expr));
+                    }
+                    _ => {
+                        panic!("Only use an identifier when assigning!");
+                    }
+                }
             },
             ast::Statement::Body { content, span: _ } => {
                 let mut result: String = String::new();
@@ -47,6 +54,9 @@ impl RustGenerator {
             ast::Statement::IfStatement {span: _, cond, body, child: _ } => {
                 return format!("if {} {}", self.gen_expr(cond), self.gen_stmt(&(*body)));
             },
+            ast::Statement::Expr { span, expr } => {
+                return format!("{};", self.gen_expr(expr));
+            }
         }
     }
 
@@ -55,8 +65,8 @@ impl RustGenerator {
             ast::Expression::Number(_span, value) => {
                 return format!("{}", value);
             },
-            ast::Expression::Identifier(_span, value) => {
-                return value.clone();
+            ast::Expression::Identifier(identifier) => {
+                return identifier.name.clone();
             },
             ast::Expression::BinaryOp(_span, expr1, op, expr2) => {
                 let op_str: &str;

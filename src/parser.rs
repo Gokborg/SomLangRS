@@ -19,7 +19,7 @@ impl <'a> Parser <'a> {
     pub fn parse(&mut self) -> Vec<ast::Statement> {
         let mut ast_nodes: Vec<ast::Statement> = Vec::new();
         while !self.done() {
-            if let Some(stmt) = parsers::stmtparser::parse_stmt(self) {
+            if let Some(stmt) = self.parse_stmt() {
                 ast_nodes.push(stmt);
             }
         }
@@ -46,6 +46,10 @@ impl <'a> Parser <'a> {
             return Option::None;
         }
         return Some(self.content[self.pos].clone());
+    }
+
+    pub fn advance(&mut self) {
+        self.pos += 1;
     }
 
     pub fn expect(&mut self, kind: Kind) -> Token {

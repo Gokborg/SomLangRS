@@ -72,7 +72,7 @@ impl GetSpan for ast::Expression {
     fn span(&self) -> &Span {
         match self {
             Self::Number(span, ..) => span,
-            Self::Identifier(span, ..) => span,
+            Self::Identifier(id, ..) => &id.span,
             Self::BinaryOp(span, ..) => span,
         }
     }
@@ -85,6 +85,7 @@ impl GetSpan for ast::Statement {
             Self::Assignment { span, ..} => span,
             Self::Body { span, ..} => span,
             Self::IfStatement { span, ..} => span,
+            Self::Expr { span, .. } => span,
         }
     }
 }

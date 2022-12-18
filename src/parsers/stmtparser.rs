@@ -1,34 +1,36 @@
 use crate::token::{Kind};
 use crate::parser::{Parser};
+use crate::span::Span;
 use crate::ast;
 
-use super::{decparser, assignparser, bodyparser, ifparser};
-
-pub fn parse_stmt(parser: &mut Parser) -> Option<ast::Statement> {
-    match parser.current().kind {
-        Kind::IDENTIFIER => {
-            if(parser.peek().kind == Kind::COLON) {
-                return Some(decparser::parse_dec(parser))
+impl <'a> Parser<'a> {
+    pub fn parse_stmt(&mut self) -> Option<ast::Statement> {
+        match self.current().kind {
+            Kind::IDENTIFIER => {
+                if self.peek().kind == Kind::COLON {
+                    return Some(self.parse_dec())
+                }
+                else {
+                    return Some(self.parse_assign());
+                }
             }
-            else {
-                return Some(assignparser::parse_assign(parser));
+            Kind::IF => {
+                return Some(self.parse_if());
             }
-
-        }
-        Kind::IF => {
-            return Some(ifparser::parse_if(parser));
-        }
-        Kind::OPENBRACE => {
-            let body = bodyparser::parse_body(parser);
-            return Some(body);
-        }
-        Kind::EOF => {
-            parser.next();
-            return None;
-        }
-        _ => {
-            println!("{:?}", parser.current().kind);
-            panic!("What have you done.");
+            Kind::OPENBRACE => {
+                let body = self.parse_body();
+                return Some(body);
+            }
+            Kind::EOF => {
+                self.next();
+                return None;
+            }
+            _ => {
+                let start = self.current();
+                let expr = self.parse_expr();
+                let end = self.expect(Kind::SEMICOLON);
+                return Some(ast::Statement::Expr { span: Span::from_tokens(&start, &end), expr });
+            }
         }
     }
 }

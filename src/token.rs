@@ -1,5 +1,7 @@
 use std::fmt;
 
+use crate::span::Loc;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Kind {
     WHITESPACE,
@@ -30,6 +32,16 @@ pub struct Token {
     pub value: String,
     pub lineno: u32,
     pub start: usize,
+}
+
+impl Token {
+    pub fn start_loc(&self) ->Loc {
+        Loc { lineno: self.lineno, col: self.start as u32 }
+    }
+    pub fn end_loc(&self) ->Loc {
+        Loc { lineno: self.lineno, col: (self.start + self.value.len()) as u32 }
+    }
+
 }
 
 impl fmt::Display for Token {

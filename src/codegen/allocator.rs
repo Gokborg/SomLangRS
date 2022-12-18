@@ -274,16 +274,24 @@ impl Allocator {
     fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<u32, Vec<String>>) {
         for node in ast_nodes {
             match node {
-                ast::Statement::Declaration { span, vartype: _, name, expr } => {
-                    self.put_range(name, span.start().lineno, ranges);
+                ast::Statement::Declaration { span, vartype: _, target, expr } => {
+                    self.put_range(&target.name, span.start().lineno, ranges);
                     self.gen_expr_ranges(expr, span.start().lineno, ranges);
                 }
-                ast::Statement::Assignment { span, name, expr } => {
-                    self.put_range(name, span.start().lineno, ranges);
-                    self.gen_expr_ranges(expr, span.start().lineno, ranges);
+                ast::Statement::Assignment { span, target, expr } => {
+                    match target {
+                        ast::Expression::Identifier(identifier) => {
+                            self.put_range(&identifier.name, span.start().lineno, ranges);
+                            self.gen_expr_ranges(expr, span.start().lineno, ranges);
+                        }
+                        _ => {
+
+                        }
+                    }
                 },
                 ast::Statement::Body { content, span } => todo!(),
                 ast::Statement::IfStatement { cond, body, child, span } => todo!(),
+                ast::Statement::Expr { span, expr } => todo!(),
             }
         }
     }
@@ -291,8 +299,8 @@ impl Allocator {
 
     fn gen_expr_ranges(&mut self, expr: &ast::Expression, lineno: u32, ranges: &mut HashMap<u32, Vec<String>>) {
         match expr {
-            ast::Expression::Identifier(span, name) => {
-                self.put_range(name, span.start().lineno, ranges);
+            ast::Expression::Identifier(identifier) => {
+                self.put_range(&identifier.name, identifier.span.start().lineno, ranges);
             }
             ast::Expression::BinaryOp(_, expr1, _, expr2) => {
                 self.gen_expr_ranges(&(*expr1), lineno, ranges);

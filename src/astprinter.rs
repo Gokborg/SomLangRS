@@ -15,19 +15,21 @@ fn p(node: &ast::Statement, lvl: u32) {
         ast::Statement::Declaration {
             span: _, 
             vartype, 
-            name, 
+            target, 
             expr } => {
                 println!("{}├Declaration", indent);
                 p_vartype(vartype, lvl+1);
                 let t = indent + " ";
-                println!("{}├Name({})", t , name);
+                println!("{}├Name({})", t , target.name);
                 println!("{}└Expression:", t);
                 p_expr(expr, lvl+2);
         }
-        ast::Statement::Assignment { span, name, expr } => {
+        ast::Statement::Assignment { span, target, expr } => {
             println!("{}├Assignment", indent);
             let t = indent + " ";
-            println!("{}├Name({})", t , name);
+            println!("{}├Name(", t);
+            p_expr(target, lvl+2);
+            println!("{})", t);
             println!("{}└Expression:", t);
             p_expr(expr, lvl+2);
         },
@@ -41,6 +43,10 @@ fn p(node: &ast::Statement, lvl: u32) {
             println!("{}├If", indent);
             p_expr(cond, lvl);
             p(body, lvl+1);
+        },
+        ast::Statement::Expr { span, expr } => {
+            println!("{}├Expr", indent);
+            p_expr(expr, lvl+1);
         },
     }
 }
@@ -69,8 +75,8 @@ fn p_expr(node: &ast::Expression, lvl: u32) {
         ast::Expression::Number(_, value) => {
             println!("{}{}-Number({})", indent, lvl, value);
         }
-        ast::Expression::Identifier(_, ident) => {
-            println!("{}{}-Identifier({})", indent, lvl, ident);
+        ast::Expression::Identifier(id) => {
+            println!("{}{}-Identifier({})", indent, lvl, id.name);
         }
         ast::Expression::BinaryOp(_, expr1, op, expr2) => {
             println!("{}{}-Op({:?})", indent, lvl, op);

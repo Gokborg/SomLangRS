@@ -23,15 +23,21 @@ pub enum VarType {
 
 #[derive(Debug)]
 pub struct ArgDecl {
-    span: Span,
-    name: String,
-    kind: VarType
+    pub span: Span,
+    pub name: Identifier,
+    pub kind: VarType
+}
+
+#[derive(Debug)]
+pub struct Identifier {
+    pub span: Span,
+    pub name: String
 }
 
 #[derive(Debug)]
 pub enum Expression {
     Number(Span, u32),
-    Identifier(Span, String),
+    Identifier(Identifier),
     BinaryOp(Span, Box<Expression>, Op, Box<Expression>)
 }
 
@@ -40,12 +46,16 @@ pub enum Statement {
     Declaration {
         span: Span,
         vartype: VarType,
-        name: String,
+        target: Identifier,
         expr: Expression,
     },
     Assignment {
         span: Span,
-        name: String,
+        target: Expression,
+        expr: Expression,
+    },
+    Expr {
+        span: Span,
         expr: Expression,
     },
     Body {

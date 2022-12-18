@@ -22,10 +22,11 @@ impl <'a> TypeChecker<'a> {
 
     fn check_statement(&mut self, statement: &ast::Statement) {
         match statement {
-            ast::Statement::Declaration { span, vartype, name, expr } => todo!(),
-            ast::Statement::Assignment { span, name, expr } => todo!(),
+            ast::Statement::Declaration { span, vartype, target: name, expr } => todo!(),
             ast::Statement::Body { content, span } => todo!(),
             ast::Statement::IfStatement { cond, body, child, span } => todo!(),
+            ast::Statement::Assignment { span, target, expr } => todo!(),
+            ast::Statement::Expr { span, expr } => todo!(),
         }
     }
 }
