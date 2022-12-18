@@ -1,5 +1,2 @@
-let b: u8 = 5;
-let a: u8 = 6;
-if a > b {
-    a = 3;
-}
+a: uint = 5;
+b: uint = 6;

@@ -5,8 +5,7 @@ use super::exprparser;
 use crate::span;
 
 pub fn parse_dec(parser: &mut Parser) -> ast::Statement {
-    let start: Token = parser.expect(Kind::LET);
-    let varname: String = parser.expect(Kind::IDENTIFIER).value;
+    let start: Token = parser.expect(Kind::IDENTIFIER);
     parser.expect(Kind::COLON);
     let vartype_str = parser.expect(Kind::IDENTIFIER).value;
     parser.expect(Kind::EQUAL);
@@ -16,7 +15,7 @@ pub fn parse_dec(parser: &mut Parser) -> ast::Statement {
     let vartype = ast::VarType::Normal(span, vartype_str);
     return ast::Statement::Declaration {
         span: span, 
-        name: varname, 
+        name: start.value, 
         vartype: vartype, 
         expr: expr
     };

@@ -24,7 +24,10 @@ impl RustGenerator {
             ast::Statement::Declaration {span: _, vartype, name, expr } => {
                 match vartype {
                     ast::VarType::Normal(_span, vartype_str) => {
-                        return format!("let mut {}: {} = {};", name, vartype_str, self.gen_expr(expr));
+                        if vartype_str == "uint" {
+                            return format!("let mut {}: {} = {};", name, "u8", self.gen_expr(expr));
+                        }
+                        panic!("Only support uint for rust compilation! do not use other types!");
                     }
                     _ => {
                         todo!();

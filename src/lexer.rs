@@ -68,11 +68,7 @@ impl Lexer {
         while f(self.next()) {
             value.push(self.content[self.pos]);
         }
-        //Check for keywords
-        if value == "let" {
-            kind = Kind::LET;
-        }
-        else if value == "if" {
+        if value == "if" {
             kind = Kind::IF;
         }
         self.tokens.push(Token {

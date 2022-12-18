@@ -6,11 +6,14 @@ use super::{decparser, assignparser, bodyparser, ifparser};
 
 pub fn parse_stmt(parser: &mut Parser) -> Option<ast::Statement> {
     match parser.current().kind {
-        Kind::LET => {
-            return Some(decparser::parse_dec(parser));
-        }
         Kind::IDENTIFIER => {
-            return Some(assignparser::parse_assign(parser));
+            if(parser.peek().kind == Kind::COLON) {
+                return Some(decparser::parse_dec(parser))
+            }
+            else {
+                return Some(assignparser::parse_assign(parser));
+            }
+
         }
         Kind::IF => {
             return Some(ifparser::parse_if(parser));

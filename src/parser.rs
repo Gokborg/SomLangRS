@@ -26,6 +26,10 @@ impl <'a> Parser <'a> {
         return ast_nodes;
     }
 
+    pub fn peek(&self) -> &Token {
+        return &self.content[self.pos+1];
+    }
+
     #[inline]
     pub fn done(&self) -> bool {
         return self.pos >= self.content.len();
