@@ -2,7 +2,6 @@ use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Kind {
-    NONE,
     WHITESPACE,
     NUMBER,
     IDENTIFIER,

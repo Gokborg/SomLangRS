@@ -24,7 +24,7 @@ pub fn parse_stmt(parser: &mut Parser) -> Option<ast::Statement> {
             return None;
         }
         _ => {
-            println!("{}", parser.current());
+            println!("{:?}", parser.current().kind);
             panic!("What have you done.");
         }
     }

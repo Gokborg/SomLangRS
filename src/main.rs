@@ -9,8 +9,6 @@ mod codegen;
 mod span;
 mod errorcontext;
 mod typechecking;
-//mod typechecking;
-use std::{path::Path};
 
 use crate::{typechecking::TypeChecker, errorcontext::ErrorContext};
 
@@ -18,13 +16,16 @@ fn main() {
     // create target folder
     std::fs::create_dir("somoutput").unwrap_or(println!("Unable to create rust compile directory"));
 
+    //reads from test.som in examples folder
+    let contents: Vec<String> = std::fs::read_to_string("examples/test.som")
+        .expect("Couldn't read test.som file in examples folder")
+        .split("\n")
+        .map(|s| s.trim().to_string())
+        .collect();
+
     let mut lexer = lexer::Lexer::new();
     
-    let mut tokens = lexer.lex(vec![
-        "let a: u8 = 5;".to_string(),
-        "if a > 0 {let a: u8 = 1; let b: u8 = 5;}".to_string(),
-        "".to_string(),
-    ]);
+    let mut tokens = lexer.lex(contents);
     let mut error_context = ErrorContext::new();
 
     //Filters out whitespaces
@@ -50,15 +51,15 @@ fn main() {
 
     astprinter::print_ast(&ast_nodes);
 
-    // let mut codegen = codegen::CodeGen::new();
-    // codegen.gen(&ast_nodes);
-    // println!("\nASM");
-    // println!("==================================");
-    // println!("{}", codegen.asm);
-
     println!("\nRUST COMPILED OUTPUT");
     println!("==================================");
-    codegen::rustcompile::RustGenerator::gen(&ast_nodes)
+    codegen::rustcompile::RustGenerator::gen(&ast_nodes);
+
+    let mut codegen = codegen::CodeGen::new();
+    codegen.gen(&ast_nodes);
+    println!("\nASM");
+    println!("==================================");
+    println!("{}", codegen.asm);
     
 }
 

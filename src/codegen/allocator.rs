@@ -1,5 +1,4 @@
-use std::collections::{HashMap, BTreeMap};
-use linked_hash_map::LinkedHashMap;
+use std::collections::{HashMap};
 
 use crate::ast;
 use super::asm;
@@ -15,6 +14,11 @@ impl RegisterAllocator {
             regs: vec![false; max_regs as usize],
             total_allocs: 0,
         }
+    }
+
+    fn mark_unavailable(&mut self, reg: usize) {
+        self.regs[reg-1] = true;
+        self.total_allocs += 1;
     }
 
     fn get_reg(&mut self) -> usize {
@@ -36,10 +40,10 @@ impl RegisterAllocator {
 
 pub struct Allocator {
     mem: Vec<bool>,
-    allocs: BTreeMap<u32, LinkedHashMap<String, usize>>,
+    allocs: HashMap<u32, HashMap<String, usize>>,
 
     //lineno : registerallocator
-    reg_allocs: BTreeMap<u32, RegisterAllocator>,
+    reg_allocs: HashMap<u32, RegisterAllocator>,
 
     //varname : memory address
     mem_allocs: HashMap<String, u32>,
@@ -51,8 +55,8 @@ impl Allocator {
     pub fn new(max_regs: u32) -> Self {
         Allocator {
             mem: vec![false; 512],
-            allocs: BTreeMap::new(),
-            reg_allocs: BTreeMap::new(),
+            allocs: HashMap::new(),
+            reg_allocs: HashMap::new(),
             mem_allocs: HashMap::new(),
             max_regvars: if max_regs > 2 {max_regs - 2} else {0},
             max_regs: max_regs,
@@ -125,6 +129,89 @@ impl Allocator {
         self.gen_ranges(ast_nodes, &mut ranges);
         println!("{:?}", ranges);
         
+        let mut least: u32 = 0;
+        let mut max: u32 = 0;
+        for (key, _) in &ranges {
+            if least == 0 {
+                least = *key;
+            }
+            if max == 0 {
+                max = *key;
+            }
+            if *key < least {
+                least = *key;
+            }
+            if *key > max {
+                max = *key;
+            }
+        }
+        for i in least..=max {
+            if let Some(varlist) = ranges.get(&i) {
+
+                let mut lineno_regalloc: &mut RegisterAllocator;
+                match self.reg_allocs.get_mut(&i) {
+                    Some(reg_allocator) => {
+                        lineno_regalloc = reg_allocator;
+                    }
+                    None => {
+                        self.reg_allocs.insert(i, RegisterAllocator::new(self.max_regs));
+                        lineno_regalloc = self.reg_allocs.get_mut(&i).unwrap();
+                    }
+                }
+                if i > 1 {
+                    if let Some(alloc) = self.allocs.get(&(i-1)) {
+                        let mut varrecord: HashMap<String, usize> = HashMap::new();
+                        for (varname, reg) in alloc {
+                            for currentvar in varlist {
+                                if currentvar == varname {
+                                    varrecord.insert(varname.clone(), *reg);
+                                    lineno_regalloc.mark_unavailable(*reg);
+                                }
+                            }
+                        }
+                        self.allocs.insert(i, varrecord);
+                    }
+                }
+
+                for varname in varlist {
+                    
+                    if let Some(varrecord) = self.allocs.get_mut(&i) {
+                        match varrecord.get(varname) {
+                            Some(_) => {
+                            }
+                            None => {
+                                let var_mem = self.mem_allocs.get(varname);
+                                if var_mem == None {
+                                    //finds a free slot in memory and gives it to the variable
+                                    self.mem_allocs.insert(varname.clone(), self.mem.iter().position(|x| !x).unwrap() as u32);
+                                }
+                                if lineno_regalloc.total_allocs < self.max_regvars {
+                                    varrecord.insert(varname.clone(), lineno_regalloc.get_reg());
+                                }
+                            }
+                        }
+                    }
+                    else {
+                        let var_mem = self.mem_allocs.get(varname);
+                        let mut varrecord: HashMap<String, usize> = HashMap::new();
+                        if var_mem == None {
+                            self.mem_allocs.insert(varname.clone(), self.mem.iter().position(|&x| x == false).unwrap() as u32);
+                        }
+                        if lineno_regalloc.total_allocs < self.max_regvars {
+                            varrecord.insert(varname.clone(), lineno_regalloc.get_reg());
+                            self.allocs.insert(i, varrecord);
+                        }
+                    }
+                }
+            }
+        }
+
+        for (lineno, varrecord) in &self.allocs {
+            println!("Line: {}", lineno);
+            for (varname, reg) in varrecord {
+                println!("\t{}->R{}", varname, reg);
+            }
+        }
 
 
         // let alloc_lines: Vec<u32>;

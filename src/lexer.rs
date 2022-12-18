@@ -125,7 +125,7 @@ impl Lexer {
                     kind = Kind::CONDL;
                 }
             }
-            _ => {kind = Kind::NONE;}
+            _ => {panic!("Unknown symbol ({:?})", self.content[self.pos])}
         }
         self.pos += 1;
         self.tokens.push(Token{
