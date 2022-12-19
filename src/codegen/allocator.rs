@@ -121,13 +121,46 @@ impl Allocator {
     }
 
     pub fn get_empty_reg(&mut self, lineno: u32) -> usize {
-        return self.reg_allocs.get_mut(&lineno).unwrap().get_reg();
+        if let Some(reg_alloc) = self.reg_allocs.get_mut(&lineno) {
+            return self.reg_allocs.get_mut(&lineno).unwrap().get_reg();
+        }
+        else {
+            let mut reg_alloc = RegisterAllocator::new(self.max_regs);
+            let reg = reg_alloc.get_reg();
+            self.reg_allocs.insert(lineno, reg_alloc);
+            return reg;
+        }
     }
 
     pub fn init(&mut self, ast_nodes: &[ast::Statement]) {
-        let mut ranges: HashMap<u32, Vec<String>> = HashMap::new();
-        self.gen_ranges(ast_nodes, &mut ranges);
-        println!("{:?}", ranges);
+        let mut live_ranges: HashMap<String, Vec<u32>> = HashMap::new();
+        self.gen_ranges(ast_nodes, &mut live_ranges);
+        println!("{:?}", live_ranges);
+
+        let mut new_liveranges: HashMap<String, Vec<u32>> = HashMap::new();
+
+        for (varname, linenos) in live_ranges {
+            for i in linenos[0]..=linenos[linenos.len()-1] {
+                if let Some(vec_r) = new_liveranges.get_mut(&varname) {
+                    vec_r.push(i);
+                }
+                else {
+                    new_liveranges.insert(varname.clone(), vec![linenos[0]]);
+                }
+            }
+        }
+
+        let mut ranges : HashMap<u32, Vec<String>> = HashMap::new();
+        for (varname, linenos) in new_liveranges {
+            for i in linenos {
+                if let Some(t) = ranges.get_mut(&i) {
+                    t.push(varname.clone());
+                }
+                else {
+                    ranges.insert(i, vec![varname.clone()]);
+                }
+            }
+        }
         
         let mut least: u32 = 0;
         let mut max: u32 = 0;
@@ -145,6 +178,7 @@ impl Allocator {
                 max = *key;
             }
         }
+
         for i in least..=max {
             if let Some(varlist) = ranges.get(&i) {
 
@@ -271,7 +305,7 @@ impl Allocator {
         // }
     }
 
-    fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<u32, Vec<String>>) {
+    fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<String, Vec<u32>>) {
         for node in ast_nodes {
             match node {
                 ast::Statement::Declaration { span, vartype: _, target, expr } => {
@@ -291,13 +325,13 @@ impl Allocator {
                 },
                 ast::Statement::Body { content, span } => todo!(),
                 ast::Statement::IfStatement { cond, body, child, span } => todo!(),
-                ast::Statement::Expr { span, expr } => todo!(),
+                ast::Statement::Expr { span, expr } => {self.gen_expr_ranges(expr, span.start().lineno, ranges)},
             }
         }
     }
 
 
-    fn gen_expr_ranges(&mut self, expr: &ast::Expression, lineno: u32, ranges: &mut HashMap<u32, Vec<String>>) {
+    fn gen_expr_ranges(&mut self, expr: &ast::Expression, lineno: u32, ranges: &mut HashMap<String, Vec<u32>>) {
         match expr {
             ast::Expression::Identifier(identifier) => {
                 self.put_range(&identifier.name, identifier.span.start().lineno, ranges);
@@ -313,13 +347,13 @@ impl Allocator {
     }
 
     #[inline]
-    fn put_range(&self, name: &String, lineno: u32, ranges: &mut HashMap<u32, Vec<String>>) {
-        if let Some(range_vec) = ranges.get_mut(&lineno) {
-            range_vec.push(name.clone());
+    fn put_range(&self, name: &String, lineno: u32, ranges: &mut HashMap<String, Vec<u32>>) {
+        if let Some(range_vec) = ranges.get_mut(name) {
+            range_vec.push(lineno);
         }
         else {
-            let range_vec: Vec<String> = vec![name.clone()];
-            ranges.insert(lineno, range_vec);
+            let range_vec: Vec<u32> = vec![lineno];
+            ranges.insert(name.clone(), range_vec);
         }
     }
 }

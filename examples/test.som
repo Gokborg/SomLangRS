@@ -1,1 +1,4 @@
-1;
+a: uint = 5;
+b: uint = 6;
+c: uint = a + b + 5;
+d: uint = 1;

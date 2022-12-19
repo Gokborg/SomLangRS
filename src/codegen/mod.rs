@@ -45,7 +45,7 @@ impl CodeGen {
             },
             ast::Statement::Body { content, span } => todo!(),
             ast::Statement::IfStatement { cond, body, child, span } => todo!(),
-            ast::Statement::Expr { span, expr } => todo!(),
+            ast::Statement::Expr { span, expr } => {self.gen_expr(expr, Some(0));},
         }
     }
 
@@ -56,11 +56,9 @@ impl CodeGen {
                     self.asm.put_li(dest_reg, *value);
                     return dest_reg;
                 }
-                else {
-                    let new_reg = self.allocator.get_empty_reg(span.start().lineno);
-                    self.asm.put_li(new_reg, *value);
-                    return new_reg;
-                }
+                let new_reg = self.allocator.get_empty_reg(span.start().lineno);
+                self.asm.put_li(new_reg, *value);
+                return new_reg;
             },
             ast::Expression::Identifier(identifier) => {
                 let reg_loaded: usize = self.allocator.get_var_loaded(&mut self.asm, identifier.span.start().lineno, &identifier.name);
@@ -73,7 +71,7 @@ impl CodeGen {
                 return reg_loaded;
             },
             ast::Expression::BinaryOp(_span, expr1, op, expr2) => {
-                let reg1: usize = self.gen_expr(&expr1, reg);
+                let reg1: usize = self.gen_expr(&expr1, Option::None);
                 let reg2: usize = self.gen_expr(&expr2, Option::None);
 
                 let mut dest: usize = reg1;
