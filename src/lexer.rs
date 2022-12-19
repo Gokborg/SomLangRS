@@ -71,6 +71,12 @@ impl Lexer {
         if value == "if" {
             kind = Kind::IF;
         }
+        else if value == "elif" {
+            kind = Kind::ELIF;
+        }
+        else if value == "else" {
+            kind = Kind::ELSE;
+        }
         self.tokens.push(Token {
             kind: kind, 
             value: value,

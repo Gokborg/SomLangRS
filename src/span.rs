@@ -2,8 +2,8 @@ use crate::{token::Token, ast};
 
 #[derive(Debug, Clone, Copy)]
 pub struct Span {
-    start: Loc,
-    end: Loc,
+    pub start: Loc,
+    pub end: Loc,
 }
 
 impl Span {

@@ -15,6 +15,8 @@ pub enum Kind {
     ASTERIK,
     SLASH,
     IF,
+    ELIF,
+    ELSE,
     OPENBRACE,
     CLOSEBRACE,
     EOF,
@@ -26,7 +28,7 @@ pub enum Kind {
     CONDLE,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct Token {
     pub kind: Kind,
     pub value: String,

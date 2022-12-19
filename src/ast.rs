@@ -1,6 +1,6 @@
 use crate::span::Span;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Op {
     Add(Span),
     Sub(Span),
@@ -13,7 +13,7 @@ pub enum Op {
     CondLEq(Span),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum VarType {
     Normal(Span, String),
     Array(Span, Box<VarType>, Option<usize>),
@@ -21,27 +21,27 @@ pub enum VarType {
     Func(Span, Box<VarType>, Vec<ArgDecl>)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ArgDecl {
     pub span: Span,
     pub name: Identifier,
     pub kind: VarType
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Identifier {
     pub span: Span,
     pub name: String
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Expression {
     Number(Span, u32),
     Identifier(Identifier),
     BinaryOp(Span, Box<Expression>, Op, Box<Expression>)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Statement {
     Declaration {
         span: Span,

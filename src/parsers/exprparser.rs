@@ -40,7 +40,7 @@ impl <'a> Parser<'a> {
                 return ast::Expression::Identifier(ast::Identifier{span: span::Span::from_token(&current), name: current.value.clone()});
             }
             _ => {
-                panic!("Failed to parse expression");
+                panic!("Failed to parse expression on token: {}", current);
             }
         }
     }

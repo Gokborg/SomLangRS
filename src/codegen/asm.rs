@@ -72,6 +72,23 @@ impl URCLAsm {
             format!("MOV R{} R{}", dest, src_a)
         );
     }
+    pub fn put_branch(&mut self, instr: &str, label: &String, src_a: usize, src_b: usize) {
+        self.instrs.push(
+            format!("{} {} R{} R{}", instr, label, src_a, src_b)
+        );
+    }
+
+    pub fn put_jmp(&mut self, label: &String) {
+        self.instrs.push(
+            format!("JMP {}", label)
+        );
+    }
+
+    pub fn put_label(&mut self, label: &String) {
+        self.instrs.push(
+            format!("{}", label)
+        );
+    }
 }
 /*
 */

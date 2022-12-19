@@ -307,29 +307,43 @@ impl Allocator {
 
     fn gen_ranges(&mut self, ast_nodes: &[ast::Statement], ranges: &mut HashMap<String, Vec<u32>>) {
         for node in ast_nodes {
-            match node {
-                ast::Statement::Declaration { span, vartype: _, target, expr } => {
-                    self.put_range(&target.name, span.start().lineno, ranges);
-                    self.gen_expr_ranges(expr, span.start().lineno, ranges);
-                }
-                ast::Statement::Assignment { span, target, expr } => {
-                    match target {
-                        ast::Expression::Identifier(identifier) => {
-                            self.put_range(&identifier.name, span.start().lineno, ranges);
-                            self.gen_expr_ranges(expr, span.start().lineno, ranges);
-                        }
-                        _ => {
-
-                        }
-                    }
-                },
-                ast::Statement::Body { content, span } => todo!(),
-                ast::Statement::IfStatement { cond, body, child, span } => todo!(),
-                ast::Statement::Expr { span, expr } => {self.gen_expr_ranges(expr, span.start().lineno, ranges)},
-            }
+            self.gen_stmt_ranges(node, ranges);
         }
     }
 
+    fn gen_stmt_ranges(&mut self, node: &ast::Statement, ranges: &mut HashMap<String, Vec<u32>>) {
+        match node {
+            ast::Statement::Declaration { span, vartype: _, target, expr } => {
+                self.put_range(&target.name, span.start().lineno, ranges);
+                self.gen_expr_ranges(expr, span.start().lineno, ranges);
+            }
+            ast::Statement::Assignment { span, target, expr } => {
+                match target {
+                    ast::Expression::Identifier(identifier) => {
+                        self.put_range(&identifier.name, span.start().lineno, ranges);
+                        self.gen_expr_ranges(expr, span.start().lineno, ranges);
+                    }
+                    _ => {
+
+                    }
+                }
+            },
+            ast::Statement::Body { content, span } => {
+                for stmt in content {
+                    self.gen_stmt_ranges(&*stmt, ranges);
+                }
+            },
+            ast::Statement::IfStatement { cond, body, child, span } => {
+                self.gen_expr_ranges(cond, span.start().lineno, ranges);
+                self.gen_stmt_ranges(body, ranges);
+                let t = &**child;
+                if let Some(c) = t {
+                    self.gen_stmt_ranges(&c, ranges);
+                }
+            },
+            ast::Statement::Expr { span, expr } => {self.gen_expr_ranges(expr, span.start().lineno, ranges)},
+        }
+    }
 
     fn gen_expr_ranges(&mut self, expr: &ast::Expression, lineno: u32, ranges: &mut HashMap<String, Vec<u32>>) {
         match expr {

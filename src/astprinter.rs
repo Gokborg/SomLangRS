@@ -34,15 +34,20 @@ fn p(node: &ast::Statement, lvl: u32) {
             p_expr(expr, lvl+2);
         },
         ast::Statement::Body { span: _, content } => {
-            println!("{}Body", indent);
+            println!("{}├Body", indent);
             for stmt in content {
                 p(&(*stmt), lvl+1);
             }
         },
-        ast::Statement::IfStatement {span: _, cond, body, child: _} => {
+        ast::Statement::IfStatement {span: _, cond, body, child} => {
             println!("{}├If", indent);
-            p_expr(cond, lvl);
+            println!("{} ├Cond", indent);
+            p_expr(cond, lvl+2);
             p(body, lvl+1);
+            println!("{} ├Child", indent);
+            if let Some(stmt) = &*(*child) {
+                p(stmt, lvl+2);
+            }
         },
         ast::Statement::Expr { span, expr } => {
             println!("{}├Expr", indent);

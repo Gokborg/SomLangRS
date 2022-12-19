@@ -2,11 +2,12 @@ pub mod asm;
 pub mod allocator;
 pub mod rustcompile;
 
-use crate::ast;
+use crate::{ast, span};
 
 pub struct CodeGen {
     allocator: allocator::Allocator,
     pub asm: asm::URCLAsm,
+    label: u32,
 }
 
 impl CodeGen {
@@ -14,6 +15,7 @@ impl CodeGen {
         CodeGen {
             allocator: allocator::Allocator::new(10),
             asm: asm::URCLAsm::new(),
+            label: 0,
         }
     }
 
@@ -43,9 +45,89 @@ impl CodeGen {
                     _ => todo!(),
                 }
             },
-            ast::Statement::Body { content, span } => todo!(),
-            ast::Statement::IfStatement { cond, body, child, span } => todo!(),
+            ast::Statement::Body { content, span } => self.gen_body(content),
+            ast::Statement::IfStatement { span: _, cond, body, child } => self.gen_if(Option::None, cond, body, child),
             ast::Statement::Expr { span, expr } => {self.gen_expr(expr, Some(0));},
+        }
+    }
+    //holy horrendous, i just direct used the old js version for this
+    fn gen_if(&mut self, end_label: Option<String>, c_cond: &ast::Expression, c_body: &Box<ast::Statement>, c_child: &Box<Option<ast::Statement>>) {
+        let mut label = self.gen_label();
+        let mut end_label = end_label;
+        let unbox_child = &*(*c_child);
+        if let Some(c) = &*unbox_child {
+            if end_label == Option::None {
+                end_label = Some(self.gen_label());
+            }
+        }
+        else {
+            if end_label != Option::None {
+                label = end_label.clone().unwrap();
+            }
+        }
+        self.gen_cond(c_cond, &label);
+        match &**c_body {
+            ast::Statement::Body { span: _, content } => {
+                self.gen_body(content);
+            },
+            _ => {
+
+            }
+        }
+        if let Some(s) = &*unbox_child {
+            if let Some(lbl) = &end_label {
+                self.asm.put_jmp(lbl);
+            }
+        }
+        self.asm.put_label(&label);
+
+        if let Some(child_stmt) = &*unbox_child {
+            match child_stmt {
+                ast::Statement::Body { span: _, content } => {
+                    self.gen_body(&content);
+                    if let Some(lbl) = &end_label {
+                        self.asm.put_label(lbl);
+                    }
+                }
+                ast::Statement::IfStatement { span: _, cond, body, child } => {
+                    self.gen_if(end_label, cond, body, child);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    fn gen_body(&mut self, content: &Vec<Box<ast::Statement>>) {
+        for stmt in content {
+            self.gen_stmt(&*stmt);
+        }
+    }
+
+    fn gen_label(&mut self) -> String {
+        self.label += 1;
+        return format!(".LABEL_{}", self.label);
+    }
+
+    fn gen_cond(&mut self, cond: &ast::Expression, end_label: &String) {
+        match cond {
+            ast::Expression::BinaryOp(span, expr1, op, expr2) => {
+                let reg1: usize = self.gen_expr(&(*expr1), Option::None);
+                let reg2: usize = self.gen_expr(&(*expr2), Option::None);
+                match op {
+                    ast::Op::CondEq(_) => self.asm.put_branch("BNE", end_label, reg1, reg2),
+                    ast::Op::CondG(_) => self.asm.put_branch("BLE", end_label, reg1, reg2),
+                    ast::Op::CondGEq(_) => self.asm.put_branch("BRL", end_label, reg1, reg2),
+                    ast::Op::CondL(_) => self.asm.put_branch("BGE", end_label, reg1, reg2),
+                    ast::Op::CondLEq(_) => self.asm.put_branch("BRG", end_label, reg1, reg2),
+                    _ => {
+                        //Type checker should do this
+                        panic!("Invalid conditional operator");
+                    }
+                }
+            }
+            _ => {
+                return;
+            }
         }
     }
 

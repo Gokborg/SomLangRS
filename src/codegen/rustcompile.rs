@@ -51,8 +51,14 @@ impl RustGenerator {
                 }
                 return format!("{{\n{}\n}}", result);
             },
-            ast::Statement::IfStatement {span: _, cond, body, child: _ } => {
-                return format!("if {} {}", self.gen_expr(cond), self.gen_stmt(&(*body)));
+            ast::Statement::IfStatement {span: _, cond, body, child } => {
+                let mut first_if = format!("if {} {}", self.gen_expr(cond), self.gen_stmt(&(*body)));
+                if let Some(stmt) =  &*(*child) {
+                    let mut result: String = "else ".to_string();
+                    result.push_str(&self.gen_stmt(stmt));
+                    first_if.push_str(&result);
+                }
+                return first_if;
             },
             ast::Statement::Expr { span, expr } => {
                 return format!("{};", self.gen_expr(expr));
