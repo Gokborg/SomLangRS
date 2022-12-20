@@ -1,6 +1,6 @@
 use crate::span::Span;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Op {
     Add(Span),
     Sub(Span),
@@ -18,7 +18,7 @@ pub enum VarType {
     Normal(Span, String),
     Array(Span, Box<VarType>, Option<Expression>),
     Pointer(Span, Box<VarType>),
-    Func(Span, Box<VarType>, Vec<ArgDecl>)
+    Func(Span, Vec<ArgDecl>, Box<VarType>)
 }
 
 #[derive(Debug, Clone)]

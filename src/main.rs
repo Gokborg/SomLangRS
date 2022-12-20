@@ -45,12 +45,18 @@ fn main() {
     // for ast_node in &ast_nodes {
     //     println!("{:?}", ast_node);
     // }
-
-    // let checker = TypeChecker::check(&mut error_context, &ast_nodes);
-    // println!("{:?}", checker);
-
     astprinter::print_ast(&ast_nodes);
-
+    
+    
+    println!("\nTYPECHECKER");
+    println!("==================================");
+    let (checker, att) = TypeChecker::check(&mut error_context, &ast_nodes);
+    for stat in att {
+        println!("{:?}", stat);
+    }
+    println!("\nTYPERRORS:");
+    println!("{:?}", checker.err);
+    
     println!("\nRUST COMPILED OUTPUT");
     println!("==================================");
     codegen::rustcompile::RustGenerator::gen(&ast_nodes);
