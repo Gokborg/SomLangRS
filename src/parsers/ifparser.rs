@@ -16,7 +16,7 @@ impl <'a> Parser<'a> {
             child = Some(Box::new(self.parse_if()?));
         }
         else if self.current().kind == Kind::ELSE {
-            self.expect(Kind::ELSE);
+            self.expect(Kind::ELSE)?;
             child = Some(Box::new(self.parse_body()?));
         }
         let span = Span::from_tokens(&start, &self.current());

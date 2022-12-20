@@ -3,7 +3,6 @@ use crate::parsers::PResult;
 
 use super::token::{Token, Kind};
 use super::ast;
-use super::parsers;
 
 pub struct Parser <'a> {
     pub content: &'a [Token],
