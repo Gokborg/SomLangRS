@@ -336,7 +336,7 @@ impl Allocator {
             ast::Statement::IfStatement { cond, body, child, span } => {
                 self.gen_expr_ranges(cond, span.start().lineno, ranges);
                 self.gen_stmt_ranges(body, ranges);
-                let t = &**child;
+                let t = child;
                 if let Some(c) = t {
                     self.gen_stmt_ranges(&c, ranges);
                 }

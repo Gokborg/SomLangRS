@@ -51,11 +51,11 @@ impl CodeGen {
         }
     }
     //holy horrendous, i just direct used the old js version for this
-    fn gen_if(&mut self, end_label: Option<String>, c_cond: &ast::Expression, c_body: &Box<ast::Statement>, c_child: &Box<Option<ast::Statement>>) {
+    fn gen_if(&mut self, end_label: Option<String>, c_cond: &ast::Expression, c_body: &Box<ast::Statement>, c_child: &Option<Box<ast::Statement>>) {
         let mut label = self.gen_label();
         let mut end_label = end_label;
-        let unbox_child = &*(*c_child);
-        if let Some(c) = &*unbox_child {
+        let unbox_child = c_child;
+        if let Some(c) = unbox_child {
             if end_label == Option::None {
                 end_label = Some(self.gen_label());
             }
@@ -66,7 +66,7 @@ impl CodeGen {
             }
         }
         self.gen_cond(c_cond, &label);
-        match &**c_body {
+        match c_body.as_ref() {
             ast::Statement::Body { span: _, content } => {
                 self.gen_body(content);
             },
@@ -74,15 +74,15 @@ impl CodeGen {
 
             }
         }
-        if let Some(s) = &*unbox_child {
+        if let Some(s) = unbox_child {
             if let Some(lbl) = &end_label {
                 self.asm.put_jmp(lbl);
             }
         }
         self.asm.put_label(&label);
 
-        if let Some(child_stmt) = &*unbox_child {
-            match child_stmt {
+        if let Some(child_stmt) = unbox_child {
+            match child_stmt.as_ref() {
                 ast::Statement::Body { span: _, content } => {
                     self.gen_body(&content);
                     if let Some(lbl) = &end_label {
@@ -97,7 +97,7 @@ impl CodeGen {
         }
     }
 
-    fn gen_body(&mut self, content: &Vec<Box<ast::Statement>>) {
+    fn gen_body(&mut self, content: &Vec<ast::Statement>) {
         for stmt in content {
             self.gen_stmt(&*stmt);
         }

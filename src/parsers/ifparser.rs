@@ -11,13 +11,13 @@ impl <'a> Parser<'a> {
         self.next();
         let cond: ast::Expression = self.parse_expr()?;
         let body: ast::Statement = self.parse_body()?;
-        let mut child: Option<ast::Statement> = Option::None;
+        let mut child: Option<Box<ast::Statement>> = Option::None;
         if self.current().kind == Kind::ELIF {
-            child = Some(self.parse_if()?);
+            child = Some(Box::new(self.parse_if()?));
         }
         else if self.current().kind == Kind::ELSE {
             self.expect(Kind::ELSE);
-            child = Some(self.parse_body()?);
+            child = Some(Box::new(self.parse_body()?));
         }
         let span = Span::from_tokens(&start, &self.current());
 
@@ -25,7 +25,7 @@ impl <'a> Parser<'a> {
             span: span, 
             cond: cond, 
             body: Box::new(body),
-            child: Box::new(child)
+            child: child
         });
     }
 }

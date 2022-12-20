@@ -54,7 +54,7 @@ impl RustGenerator {
             },
             ast::Statement::IfStatement {span: _, cond, body, child } => {
                 let mut first_if = format!("if {} {}", self.gen_expr(cond), self.gen_stmt(&(*body)));
-                if let Some(stmt) =  &*(*child) {
+                if let Some(stmt) =  child {
                     let mut result: String = "else ".to_string();
                     result.push_str(&self.gen_stmt(stmt));
                     first_if.push_str(&result);

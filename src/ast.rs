@@ -60,12 +60,12 @@ pub enum Statement {
     },
     Body {
         span: Span,
-        content: Vec<Box<Statement>>
+        content: Vec<Statement>
     },
     IfStatement {
         span: Span,
         cond: Expression,
         body: Box<Statement>,
-        child: Box<Option<Statement>>,
+        child: Option<Box<Statement>>,
     },
 }
