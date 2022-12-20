@@ -16,7 +16,7 @@ pub enum Op {
 #[derive(Debug, Clone)]
 pub enum VarType {
     Normal(Span, String),
-    Array(Span, Box<VarType>, Option<usize>),
+    Array(Span, Box<VarType>, Option<Expression>),
     Pointer(Span, Box<VarType>),
     Func(Span, Box<VarType>, Vec<ArgDecl>)
 }
@@ -45,9 +45,9 @@ pub enum Expression {
 pub enum Statement {
     Declaration {
         span: Span,
-        vartype: VarType,
         target: Identifier,
-        expr: Expression,
+        vartype: Option<VarType>,
+        expr: Option<Expression>,
     },
     Assignment {
         span: Span,

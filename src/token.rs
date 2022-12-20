@@ -10,6 +10,7 @@ pub enum Kind {
     EQUAL,
     SEMICOLON,
     COLON,
+
     PLUS,
     MINUS,
     ASTERIK,
@@ -19,6 +20,8 @@ pub enum Kind {
     ELSE,
     OPENBRACE,
     CLOSEBRACE,
+    OPENSQUARE,
+    CLOSESQUARE,
     EOF,
 
     CONDEQ,

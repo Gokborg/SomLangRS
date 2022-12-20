@@ -1,4 +1,6 @@
 
+use crate::parsers::PResult;
+
 use super::token::{Token, Kind};
 use super::ast;
 use super::parsers;
@@ -19,7 +21,7 @@ impl <'a> Parser <'a> {
     pub fn parse(&mut self) -> Vec<ast::Statement> {
         let mut ast_nodes: Vec<ast::Statement> = Vec::new();
         while !self.done() {
-            if let Some(stmt) = self.parse_stmt() {
+            if let Ok(stmt) = self.parse_stmt() {
                 ast_nodes.push(stmt);
             }
         }
@@ -52,18 +54,18 @@ impl <'a> Parser <'a> {
         self.pos += 1;
     }
 
-    pub fn expect(&mut self, kind: Kind) -> Token {
+    pub fn expect(&mut self, kind: Kind) -> PResult<Token> {
         let current: &Token = self.content.get(self.pos).unwrap();
         if kind == self.content[self.pos].kind {
             self.pos += 1;
-            return current.clone();
+            return Ok(current.clone());
         }
         else {
             println!("On line {}:", self.content[self.pos].lineno);
             //println!("\t{}", self.content[self.pos].line);
             println!("Expected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
             self.pos += 1;
-            panic!();
+            Err(())
         }
     }
 }

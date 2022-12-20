@@ -315,7 +315,7 @@ impl Allocator {
         match node {
             ast::Statement::Declaration { span, vartype: _, target, expr } => {
                 self.put_range(&target.name, span.start().lineno, ranges);
-                self.gen_expr_ranges(expr, span.start().lineno, ranges);
+                self.gen_expr_ranges(expr.as_ref().unwrap(), span.start().lineno, ranges);
             }
             ast::Statement::Assignment { span, target, expr } => {
                 match target {

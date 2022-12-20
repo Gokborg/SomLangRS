@@ -3,41 +3,43 @@ use crate::parser::{Parser};
 use crate::ast;
 use crate::span;
 
+use super::PResult;
+
 impl <'a> Parser<'a> {
-    pub fn parse_expr(&mut self) -> ast::Expression {
+    pub fn parse_expr(&mut self) -> PResult<ast::Expression> {
         return self.parse_expr_l4();
     }
 
-    fn parse_expr_l4(&mut self) -> ast::Expression {
+    fn parse_expr_l4(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l3,
             &[Kind::CONDEQ, Kind::CONDG, Kind::CONDGE, Kind::CONDL, Kind::CONDLE]
         );
     }
-    fn parse_expr_l3(&mut self) -> ast::Expression {
+    fn parse_expr_l3(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l2,
             &[Kind::PLUS, Kind::MINUS]
         );
     }
 
-    fn parse_expr_l2(&mut self) -> ast::Expression {
+    fn parse_expr_l2(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l1,
             &[Kind::ASTERIK, Kind::SLASH]
         );
     }
 
-    fn parse_expr_l1(&mut self) -> ast::Expression {
+    fn parse_expr_l1(&mut self) -> PResult<ast::Expression> {
         let current: Token = self.content[self.pos].clone();
         match current.kind {
             Kind::NUMBER => {
                 self.pos += 1;
-                return ast::Expression::Number(span::Span::from_token(&current), current.value.parse::<u32>().unwrap())
+                return Ok(ast::Expression::Number(span::Span::from_token(&current), current.value.parse::<u32>().unwrap()))
             },
             Kind::IDENTIFIER => {
                 self.pos += 1;
-                return ast::Expression::Identifier(ast::Identifier{span: span::Span::from_token(&current), name: current.value.clone()});
+                return Ok(ast::Expression::Identifier(ast::Identifier{span: span::Span::from_token(&current), name: current.value.clone()}));
             }
             _ => {
                 panic!("Failed to parse expression on token: {}", current);
@@ -45,9 +47,9 @@ impl <'a> Parser<'a> {
         }
     }
 
-    fn generic_parse_binop<F: Fn(&mut Self) -> ast::Expression>(&mut self, f: F, kinds: &[Kind]) -> ast::Expression {
+    fn generic_parse_binop<F: Fn(&mut Self) -> PResult<ast::Expression>>(&mut self, f: F, kinds: &[Kind]) -> PResult<ast::Expression> {
         let start_tok: &Token = &self.current();
-        let mut expr1: ast::Expression = f(self);
+        let mut expr1: ast::Expression = f(self)?;
         while kinds.contains(&self.current().kind) {
             let op: ast::Op;
             let op_span = span::Span::from_token(&self.current());
@@ -84,11 +86,11 @@ impl <'a> Parser<'a> {
                 }
             }
             self.next();
-            let expr2: ast::Expression = f(self);
+            let expr2: ast::Expression = f(self)?;
             let end_tok: &Token = &self.current();
             let bin_span = span::Span::from_tokens(start_tok, end_tok);
             expr1 = ast::Expression::BinaryOp(bin_span, Box::new(expr1), op, Box::new(expr2));
         }
-        return expr1;
+        return Ok(expr1);
     }
 }

@@ -32,7 +32,7 @@ impl CodeGen {
         match node {
             ast::Statement::Declaration {span, vartype, target, expr } => {
                 let var_reg = self.allocator.get_var(span.start().lineno, &target.name);
-                self.gen_expr(expr, Some(var_reg)); //value should be in var reg
+                self.gen_expr(expr.as_ref().unwrap(), Some(var_reg)); //value should be in var reg
                 self.allocator.done_with_var(&mut self.asm, span.start().lineno, &target.name, var_reg);
             },
             ast::Statement::Assignment { span, target, expr } => {

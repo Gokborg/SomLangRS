@@ -18,11 +18,15 @@ fn p(node: &ast::Statement, lvl: u32) {
             target, 
             expr } => {
                 println!("{}├Declaration", indent);
-                p_vartype(vartype, lvl+1);
+                if let Some(vartype) = vartype {
+                    p_vartype(vartype, lvl+1);
+                }
                 let t = indent + " ";
                 println!("{}├Name({})", t , target.name);
                 println!("{}└Expression:", t);
-                p_expr(expr, lvl+2);
+                if let Some(expr) = expr {
+                    p_expr(expr, lvl+2);
+                }
         }
         ast::Statement::Assignment { span, target, expr } => {
             println!("{}├Assignment", indent);
