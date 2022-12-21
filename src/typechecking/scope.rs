@@ -32,6 +32,16 @@ impl Scopes {
         Self {scopes: vec![top], variables: Vec::new()}
     }
 
+    pub fn push(&mut self) {
+        self.scopes.push(Scope::new());
+    }
+    pub fn pop(&mut self) {
+        if self.scopes.len() < 2 {
+            panic!("scope underflow");
+        }
+        self.scopes.pop();
+    }
+
     pub fn get_type(&self, name: &str) -> Option<Type> {
         for scope in self.scopes.iter().rev() {
             if let Some(vartype) = scope.types.get(name) {

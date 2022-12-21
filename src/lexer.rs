@@ -20,7 +20,7 @@ impl Lexer {
         }
     }
 
-    pub fn lex(&mut self, lines: Vec<String>) -> Vec<Token> {
+    pub fn lex(&mut self, lines: &[String]) -> Vec<Token> {
         let mut line_iter = lines.iter();
         while let Some(line) = line_iter.next() {
             self.lineno += 1;

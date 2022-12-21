@@ -1,7 +1,7 @@
 use crate::token::{Token, Kind};
 use crate::parser::{Parser};
 use crate::ast;
-use crate::span;
+use crate::span::{self, GetSpan};
 
 use super::PResult;
 
@@ -87,8 +87,7 @@ impl <'a> Parser<'a> {
             }
             self.next();
             let expr2: ast::Expression = f(self)?;
-            let end_tok: &Token = &self.current();
-            let bin_span = span::Span::from_tokens(start_tok, end_tok);
+            let bin_span = span::Span::new(start_tok.start_loc(), expr2.span().end());
             expr1 = ast::Expression::BinaryOp(bin_span, Box::new(expr1), op, Box::new(expr2));
         }
         return Ok(expr1);

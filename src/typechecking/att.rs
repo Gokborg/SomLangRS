@@ -2,6 +2,7 @@ use crate::{span::{Span, GetSpan}, ast::{Op}};
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Type {
+    Void,
     UInt,
     Char,
     Bool,
@@ -28,7 +29,7 @@ pub enum TStat {
     Assignment{span: Span, target: TExpr, expr: TExpr},
     Expr{span: Span, expr: TExpr},
     Body{span: Span, content: Vec<TStat>},
-    IfStatement{span: Span, expr: TExpr, body: Box<TStat>, child: Option<Box<TStat>>}
+    IfStatement{span: Span, cond: TExpr, body: Box<TStat>, child: Option<Box<TStat>>}
 }
 
 #[derive(Debug)]

@@ -25,8 +25,8 @@ fn main() {
 
     let mut lexer = lexer::Lexer::new();
     
-    let mut tokens = lexer.lex(contents);
-    let mut error_context = ErrorContext::new();
+    let mut tokens = lexer.lex(&contents);
+    let mut error_context = ErrorContext::new(&contents);
 
     //Filters out whitespaces
     tokens = tokens.into_iter().filter(|x| x.kind != token::Kind::WHITESPACE).collect();
@@ -55,7 +55,7 @@ fn main() {
         println!("{:?}", stat);
     }
     println!("\nTYPERRORS:");
-    println!("{:?}", checker.err);
+    println!("{}", checker.err);
     
     println!("\nRUST COMPILED OUTPUT");
     println!("==================================");

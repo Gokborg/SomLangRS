@@ -1,23 +1,30 @@
 mod scope;
 pub mod att;
 
-use crate::{ast, errorcontext::{ErrorContext, ErrorKind}, parsers::PResult, span::GetSpan};
+use crate::{ast::{self, VarType}, errorcontext::{ErrorContext, ErrorKind}, parsers::PResult, span::GetSpan};
 
 use self::scope::Scopes;
 
 #[derive(Debug)]
 pub struct TypeChecker<'a> {
-    pub err: &'a mut ErrorContext,
+    pub err: &'a mut ErrorContext<'a>,
     pub scopes: Scopes,
 }
 impl <'a> TypeChecker<'a> {
-    pub fn check(err: &'a mut ErrorContext, statements: &[ast::Statement]) -> (Self, Vec<att::TStat>) {
+    pub fn check(err: &'a mut ErrorContext<'a>, statements: &[ast::Statement]) -> (Self, Vec<att::TStat>) {
         let mut checker = Self { err, scopes: Scopes::new() };
-        let att = checker.check_body(statements);
-        (checker, att)
+        let tree = checker.check_statements(statements);
+        (checker, tree)
     }
 
     fn check_body(&mut self, statements: &[ast::Statement]) -> Vec<att::TStat> {
+        self.scopes.push();
+        let tree = self.check_statements(statements);
+        self.scopes.pop();
+        tree
+    }
+
+    fn check_statements(&mut self, statements: &[ast::Statement]) -> Vec<att::TStat> {
         let mut stats = Vec::new();
         for statement in statements {
             stats.push(self.check_statement(statement));
@@ -36,7 +43,7 @@ impl <'a> TypeChecker<'a> {
                     if exprtype.infers(&vartype) {
                         vartype = exprtype;
                     } else {
-                        self.err.error(ErrorKind::UnexpectedType{expected: vartype.clone()}, *expr.span() )
+                        self.err.error(ErrorKind::UnexpectedType{expected: vartype.clone(), actual: exprtype.clone()}, *expr.span() )
                     }
                     att::TStat::Decl { span: span.clone(), vartype: vartype.clone(), expr: Some(expr) }
                 } else {
@@ -46,10 +53,38 @@ impl <'a> TypeChecker<'a> {
 
                 output
             },
-            ast::Statement::Body { content, span } => todo!(),
-            ast::Statement::IfStatement { cond, body, child, span } => todo!(),
-            ast::Statement::Assignment { span, target, expr } => todo!(),
-            ast::Statement::Expr { span, expr } => todo!(),
+            ast::Statement::Body { content, span } => {
+                att::TStat::Body { span: span.clone(), content: self.check_body(content)}
+            },
+            ast::Statement::IfStatement { cond, body, child, span } => {
+                let cond = self.check_expr(cond);
+                let body = Box::new(self.check_statement(body));
+                let child = child.as_ref().map(|child| Box::new(self.check_statement(child)));
+                att::TStat::IfStatement { span: span.clone(), cond, body, child }
+            },
+            ast::Statement::Assignment { span, target, expr } => {
+                let target = self.check_expr(target);
+                match target {
+                    att::TExpr::Var { .. } => {},
+                    _ => {
+                        self.err.error(ErrorKind::InvalidAssignTarget, span.clone());
+                    }
+                }
+                let expr = self.check_expr(expr);
+                if expr.vartype() != target.vartype() {
+                    self.err.error(ErrorKind::UnexpectedType { expected: target.vartype().clone(), actual: expr.vartype().clone() }, expr.span().clone());
+                }
+
+                att::TStat::Assignment { span: span.clone(), target, expr }
+            },
+            ast::Statement::Expr { span, expr } => {
+                let expr = self.check_expr(expr);
+                if !att::Type::Void.infers(expr.vartype()) {
+                    self.err.error(ErrorKind::IgnoredResult, expr.span().clone());
+                }
+
+                att::TStat::Expr { span: span.clone(), expr }
+            },
         }
     }
 
@@ -91,7 +126,7 @@ impl <'a> TypeChecker<'a> {
                         => att::Type::Bool,
                      _ => left.vartype().clone()
                 }} else {
-                    self.err.error(ErrorKind::UnexpectedType { expected: left.vartype().clone() }, span.clone());
+                    self.err.error(ErrorKind::UnexpectedType { expected: left.vartype().clone(), actual: right.vartype().clone() }, span.clone());
                     att::Type::Infer
                 };
 
