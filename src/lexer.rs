@@ -127,7 +127,17 @@ impl Lexer {
                     kind = Kind::CONDL;
                 }
             }
-            _ => {panic!("Unknown symbol ({:?})", self.content[self.pos])}
+            _ => {
+                self.pos += 1;
+                if let Some(token) = self.tokens.last_mut() {
+                    if token.kind == Kind::Unknown {
+                        token.value.push(self.content[self.pos-1]);
+                        return;
+                    }
+                }
+                self.tokens.push(Token { kind: Kind::Unknown, value: self.content[self.pos-1].to_string(), lineno: self.lineno, start });
+                return;
+            }
         }
         self.pos += 1;
         self.tokens.push(Token{

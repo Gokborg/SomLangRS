@@ -29,6 +29,7 @@ pub enum Kind {
     CONDL,
     CONDGE,
     CONDLE,
+    Unknown
 }
 
 #[derive(Clone, PartialEq)]
