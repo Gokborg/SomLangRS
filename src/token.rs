@@ -1,8 +1,8 @@
 use std::fmt;
 
-use crate::span::Loc;
+use crate::span::{Loc, Span};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Kind {
     WHITESPACE,
     NUMBER,
@@ -45,6 +45,9 @@ impl Token {
     }
     pub fn end_loc(&self) ->Loc {
         Loc { lineno: self.lineno, col: (self.start + self.value.len()) as u32 }
+    }
+    pub fn span(&self) -> Span {
+        Span::new(self.start_loc(), self.end_loc())
     }
 
 }

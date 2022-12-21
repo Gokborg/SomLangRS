@@ -1,7 +1,8 @@
 use crate::span::Span;
 use crate::typechecking::att;
-use std::fmt::{self, Display, Write};
+use std::fmt::{self, Display};
 use crate::ansi;
+use crate::token::Kind;
 
 #[derive(Debug)]
 pub struct ErrorContext<'a> {
@@ -59,7 +60,8 @@ impl <'a> Display for ErrorContext<'a> {
 pub enum ErrorKind {
     UndefinedVariable,
     UndefinedType,
-    UnexpectedToken,
+    UnexpectedToken{expected: Kind, actual: Kind},
+    UnexpectedTokens{expected: &'static str, actual: Kind},
     UnexpectedType{expected: att::Type, actual: att::Type},
     IgnoredResult,
     InvalidAssignTarget
@@ -70,7 +72,8 @@ impl Display for ErrorKind {
         match self {
             ErrorKind::UndefinedVariable => write!(f, "Undefined variable"),
             ErrorKind::UndefinedType => write!(f, "Undefined type"),
-            ErrorKind::UnexpectedToken => write!(f, "Unexpected token"),
+            ErrorKind::UnexpectedToken {expected, actual} => write!(f, "Expected token {:?} but got {:?}", expected, actual),
+            ErrorKind::UnexpectedTokens {expected, actual} => write!(f, "Expected token {:} but got {:?}", expected, actual),
             ErrorKind::UnexpectedType { expected, actual } => write!(f, "Expected type {:?} but got {:?}", expected, actual),
             ErrorKind::IgnoredResult => write!(f, "ignored expression result"),
             ErrorKind::InvalidAssignTarget => write!(f, "invalid assign target"),

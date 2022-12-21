@@ -35,7 +35,7 @@ impl <'a> Parser<'a> {
                         self.expect(Kind::EQUAL)?;
                         let expr = self.parse_expr()?;
 
-                        let semi = self.expect(Kind::SEMICOLON)?;
+                        let semi = self.expect_weakly(Kind::SEMICOLON);
                         return Ok(ast::Statement::Assignment {
                             span: Span::from_tokens(&start, &semi), 
                             target, 
@@ -43,7 +43,7 @@ impl <'a> Parser<'a> {
                         });
                     }
                     _ => {
-                        let end = self.expect(Kind::SEMICOLON)?;
+                        let end = self.expect_weakly(Kind::SEMICOLON);
                         return Ok(ast::Statement::Expr { span: Span::from_tokens(&start, &end), expr: target });
                     }
                 }

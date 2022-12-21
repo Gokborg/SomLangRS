@@ -40,7 +40,7 @@ fn main() {
     println!("\nPARSER");
     println!("==================================");
     //Parser
-    let mut parser = parser::Parser::new(tokens.as_slice());
+    let mut parser = parser::Parser::new(tokens.as_slice(), &mut error_context);
     let ast_nodes = parser.parse();
 
     // for ast_node in &ast_nodes {
@@ -51,11 +51,11 @@ fn main() {
     
     println!("\nTYPECHECKER");
     println!("==================================");
-    let (checker, att) = TypeChecker::check(&mut error_context, &ast_nodes);
+    let (checker, att) = TypeChecker::check(parser.err, &ast_nodes);
     for stat in att {
         println!("{:?}", stat);
     }
-    println!("\nTYPERRORS:");
+    println!("\nERRORS:");
     println!("{}", checker.err);
     
     println!("\nRUST COMPILED OUTPUT");

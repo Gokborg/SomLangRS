@@ -2,6 +2,7 @@ use crate::token::{Token, Kind};
 use crate::parser::{Parser};
 use crate::ast;
 use crate::span::{self, GetSpan};
+use crate::errorcontext::ErrorKind;
 
 use super::PResult;
 
@@ -42,7 +43,9 @@ impl <'a> Parser<'a> {
                 return Ok(ast::Expression::Identifier(ast::Identifier{span: span::Span::from_token(&current), name: current.value.clone()}));
             }
             _ => {
-                panic!("Failed to parse expression on token: {}", current);
+                self.advance();
+                self.err.error(ErrorKind::UnexpectedTokens { expected: "NUMBER or IDENTIFIER", actual: current.kind.clone() }, current.span());
+                return PResult::Err(());
             }
         }
     }

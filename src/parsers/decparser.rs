@@ -17,7 +17,7 @@ impl <'a> Parser<'a> {
         self.expect(Kind::EQUAL)?;
         let expr: ast::Expression = self.parse_expr()?;
         let span = span::Span::from_tokens(&start, &self.current());
-        self.expect(Kind::SEMICOLON)?;
+        self.expect_weakly(Kind::SEMICOLON);
         return Ok(ast::Statement::Declaration {
             span: span, 
             target: ast::Identifier{span: span::Span::from_token(&start), name: start.value},

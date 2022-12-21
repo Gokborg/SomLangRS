@@ -1,7 +1,7 @@
 mod scope;
 pub mod att;
 
-use crate::{ast::{self, VarType}, errorcontext::{ErrorContext, ErrorKind}, parsers::PResult, span::GetSpan};
+use crate::{ast::{self}, errorcontext::{ErrorContext, ErrorKind}, span::GetSpan};
 
 use self::scope::Scopes;
 

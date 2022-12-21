@@ -1,5 +1,7 @@
 
+use crate::errorcontext::{ErrorContext, ErrorKind};
 use crate::parsers::PResult;
+use crate::span::Span;
 
 use super::token::{Token, Kind};
 use super::ast;
@@ -7,13 +9,14 @@ use super::ast;
 pub struct Parser <'a> {
     pub content: &'a [Token],
     pub pos: usize,
+    pub err: &'a mut ErrorContext<'a>,
 }
 
 impl <'a> Parser <'a> {
-    pub fn new(tokens: &'a [Token]) -> Self {
+    pub fn new(tokens: &'a [Token], err: &'a mut ErrorContext<'a>) -> Self {
         return Parser {
             content: tokens,
-            pos: 0
+            pos: 0, err
         }
     }
 
@@ -60,11 +63,20 @@ impl <'a> Parser <'a> {
             return Ok(current.clone());
         }
         else {
-            println!("On line {}:", self.content[self.pos].lineno);
-            //println!("\t{}", self.content[self.pos].line);
-            println!("Expected '{:?}' got '{:?}' for {:?}", kind, self.content[self.pos].kind, self.content[self.pos].value);
+            self.err.error(ErrorKind::UnexpectedToken{expected: kind, actual: current.kind.clone()}, Span::from_token(current));
             self.pos += 1;
             Err(())
+        }
+    }
+    pub fn expect_weakly(&mut self, kind: Kind) -> Token {
+        let current: &Token = self.content.get(self.pos).unwrap();
+        if kind == self.content[self.pos].kind {
+            self.pos += 1;
+            return current.clone();
+        }
+        else {
+            self.err.error(ErrorKind::UnexpectedToken{expected: kind, actual: current.kind.clone()}, Span::from_token(current));
+            current.clone()
         }
     }
 }
