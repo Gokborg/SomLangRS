@@ -16,7 +16,7 @@ impl <'a> Parser<'a> {
                 return Ok(ast::Statement::Expr { span: Span::from_tokens(&start, &semi), expr: target });
             }
             Kind::EQUAL => {
-                self.advance();
+                self.expect(Kind::EQUAL)?;
                 let expr = self.parse_expr()?;
 
                 let semi = self.expect(Kind::SEMICOLON)?;
@@ -27,8 +27,7 @@ impl <'a> Parser<'a> {
                 });
             }
             _ => {
-                dbg!("TODO");
-                Err(())
+                todo!();
             }
         }
     }

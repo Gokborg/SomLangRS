@@ -29,9 +29,24 @@ impl <'a> Parser<'a> {
             }
             _ => {
                 let start = self.current();
-                let expr = self.parse_expr()?;
-                let end = self.expect(Kind::SEMICOLON)?;
-                return Ok(ast::Statement::Expr { span: Span::from_tokens(&start, &end), expr });
+                let target = self.parse_expr()?;
+                match self.current().kind {
+                    Kind::EQUAL => {
+                        self.expect(Kind::EQUAL)?;
+                        let expr = self.parse_expr()?;
+
+                        let semi = self.expect(Kind::SEMICOLON)?;
+                        return Ok(ast::Statement::Assignment {
+                            span: Span::from_tokens(&start, &semi), 
+                            target, 
+                            expr
+                        });
+                    }
+                    _ => {
+                        let end = self.expect(Kind::SEMICOLON)?;
+                        return Ok(ast::Statement::Expr { span: Span::from_tokens(&start, &end), expr: target });
+                    }
+                }
             }
         }
     }

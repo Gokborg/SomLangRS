@@ -67,11 +67,11 @@ impl <'a> TypeChecker<'a> {
                 match target {
                     att::TExpr::Var { .. } => {},
                     _ => {
-                        self.err.error(ErrorKind::InvalidAssignTarget, span.clone());
+                        self.err.error(ErrorKind::InvalidAssignTarget, target.span().clone());
                     }
                 }
                 let expr = self.check_expr(expr);
-                if expr.vartype() != target.vartype() {
+                if !expr.vartype().infers(target.vartype()) {
                     self.err.error(ErrorKind::UnexpectedType { expected: target.vartype().clone(), actual: expr.vartype().clone() }, expr.span().clone());
                 }
 
@@ -119,7 +119,7 @@ impl <'a> TypeChecker<'a> {
                 let left = self.check_expr(left);
                 let right = self.check_expr(right);
 
-                let vartype = if left.vartype() == right.vartype() {match op {
+                let vartype = if left.vartype().infers(right.vartype()) {match op {
                     ast::Op::CondEq(_)
                         | ast::Op::CondG(_) | ast::Op::CondGEq(_)
                         | ast::Op::CondL(_) |ast::Op::CondLEq(_)

@@ -9,6 +9,7 @@ mod codegen;
 mod span;
 mod errorcontext;
 mod typechecking;
+mod ansi;
 
 use crate::{typechecking::TypeChecker, errorcontext::ErrorContext};
 
@@ -17,10 +18,10 @@ fn main() {
     std::fs::create_dir("somoutput").unwrap_or(println!("Unable to create rust compile directory"));
 
     //reads from test.som in examples folder
-    let contents: Vec<String> = std::fs::read_to_string("examples/test.som")
+    let contents: Vec<String> = std::fs::read_to_string("examples/errors.som")
         .expect("Couldn't read test.som file in examples folder")
-        .split("\n")
-        .map(|s| s.trim().to_string())
+        .lines()
+        .map(|s| s.to_string())
         .collect();
 
     let mut lexer = lexer::Lexer::new();
