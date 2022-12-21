@@ -31,23 +31,23 @@ impl <'a> Display for ErrorContext<'a> {
                 let width = (end.col - start.col).max(1) as usize;
                 let lineno = format!("{}", start.lineno);
                 let bar = ansi::cyan(" |");
-                writeln!(f, "{}{}    {}", ansi::cyan(&lineno), bar, line)?;
-                writeln!(f, "{}{}    {}{}", " ".repeat(lineno.len()), bar, " ".repeat(start.col as usize), ansi::red("^".repeat(width)))?;
+                writeln!(f, "{}{} {}", ansi::cyan(&lineno), bar, line)?;
+                writeln!(f, "{}{} {}{}", " ".repeat(lineno.len()), bar, " ".repeat(start.col as usize), ansi::red("^".repeat(width)))?;
             } else {
                 let line = &lines[start.lineno as usize - 1];
                 let prefix_width = format!("{}", end.lineno).len();
                 let lineno = format!("{}", start.lineno);
                 let lineno = format!("{}{}", " ".repeat(prefix_width - lineno.len()), lineno);
                 let bar = ansi::cyan(" |");
-                writeln!(f, "{}{}    {}", ansi::cyan(&lineno), bar, line)?;
-                writeln!(f, "{}{}{}{}", " ".repeat(prefix_width), bar, ansi::red("-".repeat(4 + start.col as usize)), ansi::red('^'))?;
+                writeln!(f, "{}{} {}", ansi::cyan(&lineno), bar, line)?;
+                writeln!(f, "{}{} {}{}", " ".repeat(prefix_width), bar, ansi::red("_".repeat(start.col as usize)), ansi::red('^'))?;
                 for lineno in start.lineno+1..end.lineno+1 {
                     let line = &lines[lineno as usize - 1];
                     let lineno = format!("{}", lineno);
-                    let lineno = format!("{}{}", " ".repeat(prefix_width - lineno.len()), ansi::cyan(lineno));
-                    writeln!(f, "{}{}    {}", ansi::red(lineno), bar, line)?;
+                    let lineno = format!("{}{}", " ".repeat(prefix_width - lineno.len()), lineno);
+                    writeln!(f, "{}{}{}{}", ansi::cyan(lineno), bar, ansi::red("|"), line)?;
                 }
-                writeln!(f, "{}{}{}{}", " ".repeat(prefix_width), bar, ansi::red("-".repeat(3 + end.col as usize)), ansi::red('^'))?;
+                writeln!(f, "{}{}{}{}{}", " ".repeat(prefix_width), bar, ansi::red("|"), ansi::red("_".repeat(end.col as usize - 1)), ansi::red('^'))?;
             }
         }
 
