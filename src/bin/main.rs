@@ -1,17 +1,5 @@
-#[allow(unused_variables)]
-mod token;
-mod lexer;
-mod ast;
-mod parsers;
-mod parser;
-mod astprinter;
-mod codegen;
-mod span;
-mod errorcontext;
-mod typechecking;
-mod ansi;
-
-use crate::{typechecking::TypeChecker, errorcontext::ErrorContext};
+use somelang_rs::*;
+use somelang_rs::{typechecking::TypeChecker, errorcontext::ErrorContext};
 
 fn main() {
     // create target folder
@@ -71,4 +59,3 @@ fn main() {
     println!("{}", codegen.asm);
     
 }
-
