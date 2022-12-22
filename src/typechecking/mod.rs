@@ -1,9 +1,9 @@
-mod scope;
+pub mod scope;
 pub mod att;
 
 use crate::{ast::{self}, errorcontext::{ErrorContext, ErrorKind}, span::GetSpan};
 
-use self::scope::Scopes;
+use self::scope::{Scopes, VarIndex};
 
 #[derive(Debug)]
 pub struct TypeChecker<'a> {
@@ -45,11 +45,12 @@ impl <'a> TypeChecker<'a> {
                     } else {
                         self.err.error(ErrorKind::UnexpectedType{expected: vartype.clone(), actual: exprtype.clone()}, *expr.span() )
                     }
-                    att::TStat::Decl { span: span.clone(), vartype: vartype.clone(), expr: Some(expr) }
+                    let varid = self.scopes.put(name.name.clone(), vartype.clone(), span.clone());
+                    att::TStat::Decl { span: span.clone(), varid, vartype: vartype, expr: Some(expr) }
                 } else {
-                    att::TStat::Decl { span: span.clone(), vartype: vartype.clone(), expr: None }
+                    let varid = self.scopes.put(name.name.clone(), vartype.clone(), span.clone());
+                    att::TStat::Decl { span: span.clone(), varid, vartype: vartype, expr: None }
                 };
-                self.scopes.put(name.name.clone(), vartype, span.clone());
 
                 output
             },
@@ -108,11 +109,11 @@ impl <'a> TypeChecker<'a> {
         match node {
             &ast::Expression::Number(span, num) => att::TExpr::Uint { span, value: num },
             ast::Expression::Identifier(id) => {
-                if let Some(variable) = self.scopes.get(&id.name) {
-                    att::TExpr::Var { span: id.span, vartype: variable.vartype.clone() }
+                if let Some(varid) = self.scopes.get_index(&id.name) {
+                    att::TExpr::Var { span: id.span, varid, vartype: self.scopes[varid].vartype.clone() }
                 } else {
                     self.err.error(ErrorKind::UndefinedVariable, id.span);
-                    att::TExpr::Var { span: id.span, vartype: att::Type::Infer }
+                    att::TExpr::Var { span: id.span, varid: VarIndex::Undefined, vartype: att::Type::Infer }
                 }
             },
             ast::Expression::BinaryOp(span, left, op, right) => {

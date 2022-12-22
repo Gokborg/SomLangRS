@@ -1,5 +1,7 @@
 use crate::{span::{Span, GetSpan}, ast::{Op}};
 
+use super::scope::VarIndex;
+
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Type {
     Void,
@@ -25,7 +27,7 @@ impl Type {
 #[derive(Debug)]
 
 pub enum TStat {
-    Decl{span: Span, vartype: Type, expr: Option<TExpr>},
+    Decl{span: Span, varid: VarIndex, vartype: Type, expr: Option<TExpr>},
     Assignment{span: Span, target: TExpr, expr: TExpr},
     Expr{span: Span, expr: TExpr},
     Body{span: Span, content: Vec<TStat>},
@@ -35,7 +37,7 @@ pub enum TStat {
 #[derive(Debug)]
 pub enum TExpr {
     Uint{span: Span, value: u32},
-    Var{span: Span, vartype: Type},
+    Var{span: Span, varid: VarIndex, vartype: Type},
     BinaryOp{span: Span, left: Box<TExpr>, op: Op, right: Box<TExpr>, vartype: Type},
 }
 

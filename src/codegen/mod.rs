@@ -1,6 +1,7 @@
 pub mod asm;
 pub mod allocator;
 pub mod rustcompile;
+pub mod wasm;
 
 use crate::{ast, span};
 

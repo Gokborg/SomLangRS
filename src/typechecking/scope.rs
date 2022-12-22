@@ -1,6 +1,6 @@
 use std::{collections::HashMap, ops::{Index, IndexMut}};
 
-use crate::{span::Span, errorcontext::Error};
+use crate::{span::{Span, Loc}, errorcontext::Error};
 
 use super::{att::Type};
 
@@ -11,9 +11,12 @@ pub struct Variable {
     references: Vec<Span>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct VarIndex {
     index: usize
+}
+impl VarIndex {
+    pub const Undefined: Self = Self {index: 0};
 }
 
 #[derive(Debug)]
@@ -29,7 +32,13 @@ impl Scopes {
         top.types.insert("bool".to_owned(), Type::Bool);
         top.types.insert("char".to_owned(), Type::Char);
 
-        Self {scopes: vec![top], variables: Vec::new()}
+        let undef = Variable {
+            vartype: Type::Infer,
+            declaration: Span { start: Loc {lineno: 0, col: 0}, end: Loc {lineno: 0, col: 0} },
+            references: Vec::new()
+        };
+
+        Self {scopes: vec![top], variables: vec![undef]}
     }
 
     pub fn push(&mut self) {
