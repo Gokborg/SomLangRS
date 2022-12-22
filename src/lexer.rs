@@ -1,4 +1,5 @@
 use super::token::{Token, Kind};
+use wasm_bindgen::prelude::*;
 
 pub struct Lexer {
     //Char buffer related things
@@ -10,6 +11,39 @@ pub struct Lexer {
     lineno: u32,
 }
 
+#[wasm_bindgen]
+pub struct TokenBuf {
+    tokens: Vec<Token>
+}
+#[wasm_bindgen]
+impl TokenBuf {
+    fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens }
+    }
+
+    pub fn kinds(&self) -> Vec<u32> {
+        self.tokens.iter().map(|t| t.kind as u32).collect()
+    }
+    pub fn linenos(&self) -> Vec<usize> {
+        self.tokens.iter().map(|t| t.lineno as usize).collect()
+    }
+    pub fn colnos(&self) -> Vec<usize> {
+        self.tokens.iter().map(|t| t.start).collect()
+    }
+    pub fn lengths(&self) -> Vec<usize> {
+        self.tokens.iter().map(|t| t.value.len()).collect()
+    }
+}
+
+
+
+#[wasm_bindgen]
+pub fn lex(src: &str) -> TokenBuf {
+    let lines: Vec<String> = src.lines().map(|line|line.to_owned()).collect();
+    let tokens = Lexer::new().lex(&lines);
+    TokenBuf::new(tokens)
+} 
+
 impl Lexer {
     pub fn new() -> Self {
         return Self {
@@ -19,8 +53,8 @@ impl Lexer {
             lineno: 0,
         }
     }
-
-    pub fn lex(&mut self, lines: &[String]) -> Vec<Token> {
+    
+    pub fn lex(mut self, lines: &[String]) -> Vec<Token> {
         let mut line_iter = lines.iter();
         while let Some(line) = line_iter.next() {
             self.lineno += 1;
@@ -41,7 +75,7 @@ impl Lexer {
             }
         }
         self.tokens.push(Token { kind: Kind::EOF, value: String::new(), lineno: self.lineno, start: self.pos});
-        return self.tokens.clone();
+        return self.tokens;
     }
 
     #[inline]

@@ -30,7 +30,7 @@ impl Func {
 }
 
 impl WasmGen {
-    pub fn gen(tree: &[att::TStat]) {
+    pub fn gen(tree: &[att::TStat]) -> Vec<u8> {
         let mut gennerator = WasmGen {};
         
         let mut module = Module::new();
@@ -65,14 +65,14 @@ impl WasmGen {
         codes.function(&f.wasm);
         module.section(&codes);
 
-        let mut binary_file = fs::File::create("somoutput/test.wasm").unwrap();
+        // let mut binary_file = fs::File::create("somoutput/test.wasm").unwrap();
         // Extract the encoded Wasm bytes for this module.
-        let wasm_bytes = module.finish();
-        binary_file.write_all(&wasm_bytes).unwrap();
+        module.finish()
+        // binary_file.write_all(&wasm_bytes).unwrap();
 
-        let mut text_file = fs::File::create("somoutput/test.wat").unwrap();
-        let text = wasmprinter::print_bytes(wasm_bytes).unwrap();
-        write!(&mut text_file, "{}", text).unwrap();
+        // let mut text_file = fs::File::create("somoutput/test.wat").unwrap();
+        // let text = wasmprinter::print_bytes(wasm_bytes).unwrap();
+        // write!(&mut text_file, "{}", text).unwrap();
     }
     fn gen_stmts(&mut self, func: &mut Func, tree: &[att::TStat]) {
         for node in tree {

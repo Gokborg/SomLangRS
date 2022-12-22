@@ -1,8 +1,10 @@
 use std::fmt;
 
 use crate::span::{Loc, Span};
+use wasm_bindgen::prelude::*;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
+#[wasm_bindgen]
 pub enum Kind {
     WHITESPACE,
     NUMBER,
@@ -41,10 +43,10 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn start_loc(&self) ->Loc {
+    pub fn start_loc(&self) -> Loc {
         Loc { lineno: self.lineno, col: self.start as u32 }
     }
-    pub fn end_loc(&self) ->Loc {
+    pub fn end_loc(&self) -> Loc {
         Loc { lineno: self.lineno, col: (self.start + self.value.len()) as u32 }
     }
     pub fn span(&self) -> Span {

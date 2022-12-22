@@ -1,0 +1,14 @@
+{
+    "tasks": {
+        "build": "wasm-pack build --target=web",
+        "run": "deno run --allow-read=. index.ts"
+    },
+    "compilerOptions": {
+        "lib": [
+            "deno.window",
+            "esnext",
+            "dom",
+            "dom.iterable"
+        ]
+    }
+}
