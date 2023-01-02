@@ -19,18 +19,13 @@ pub fn wasm_to_wat(bytes: &[u8]) -> String {
 }
 
 #[wasm_bindgen]
-pub fn compile(src: String) -> Vec<u8> {
+pub fn compile(src: &str) -> Vec<u8> {
     // create target folder
     //reads from test.som in examples folder
-    let contents: Vec<String> = src
-        .lines()
-        .map(|s| s.to_owned())
-        .collect();
-
-    let mut lexer = lexer::Lexer::new();
+    let lines: Vec<&str> = src.lines().collect();
     
-    let mut tokens = lexer.lex(&contents);
-    let mut error_context = ErrorContext::new(&contents);
+    let mut tokens = lexer::Lexer::new().lex(src);
+    let mut error_context = ErrorContext::new(&lines);
 
     //Filters out whitespaces
     tokens = tokens.into_iter().filter(|x| x.kind != token::Kind::WHITESPACE).collect();

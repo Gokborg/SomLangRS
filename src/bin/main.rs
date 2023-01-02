@@ -6,17 +6,13 @@ fn main() {
     std::fs::create_dir("somoutput").unwrap_or(println!("Unable to create rust compile directory"));
 
     //reads from test.som in examples folder
-    let contents: Vec<String> = std::fs::read_to_string("examples/wasm.som")
-        .expect("Couldn't read test.som file in examples folder")
-        .lines()
-        .map(|s| s.to_string())
-        .collect();
+    let contents: String = std::fs::read_to_string("examples/test.som")
+        .expect("Couldn't read test.som file in examples folder");
 
-    let mut lexer = lexer::Lexer::new();
-    
-    let mut tokens = lexer.lex(&contents);
-    let mut error_context = ErrorContext::new(&contents);
+    let lines: Vec<&str> = contents.lines().collect();
 
+    let mut tokens = lexer::Lexer::new().lex(&contents);
+    let mut error_context = ErrorContext::new(&lines);
     //Filters out whitespaces
     tokens = tokens.into_iter().filter(|x| x.kind != token::Kind::WHITESPACE).collect();
     println!("LEXER");

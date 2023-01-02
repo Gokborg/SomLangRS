@@ -80,12 +80,13 @@ impl GetSpan for ast::Expression {
 
 impl GetSpan for ast::Statement {
     fn span(&self) -> &Span {
+        use ast::Statement::*;
         match self {
-            Self::Declaration { span, ..} => span,
-            Self::Assignment { span, ..} => span,
-            Self::Body { span, ..} => span,
-            Self::IfStatement { span, ..} => span,
-            Self::Expr { span, .. } => span,
+            Declaration { span, ..} => span,
+            Assignment { span, ..} => span,
+            Body { span, ..} => span,
+            IfStatement { span, ..} => span,
+            Expr { span, .. } => span,
         }
     }
 }

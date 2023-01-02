@@ -7,12 +7,12 @@ use crate::token::Kind;
 #[derive(Debug)]
 pub struct ErrorContext<'a> {
     errors: Vec<Error>,
-    lines: &'a [String]
+    lines: &'a [&'a str]
 }
 
 impl <'a> ErrorContext<'a> {
-    pub fn new(src: &'a [String]) -> Self {
-        Self {errors: Vec::new(), lines: src}
+    pub fn new(lines: &'a [&'a str]) -> Self {
+        Self {errors: Vec::new(), lines}
     }
     pub fn error(&mut self, kind: ErrorKind, span: Span) {
         self.errors.push(Error {kind, span});

@@ -20,10 +20,15 @@ pub enum Kind {
     IF,
     ELIF,
     ELSE,
+    FN,
+
+    ARROW,
     OPENBRACE,
     CLOSEBRACE,
     OPENSQUARE,
     CLOSESQUARE,
+    OPENPAREN,
+    CLOSEPAREN,
     EOF,
 
     CONDEQ,

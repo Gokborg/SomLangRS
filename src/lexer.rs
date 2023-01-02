@@ -1,10 +1,12 @@
+use std::str::Chars;
+
 use super::token::{Token, Kind};
 use wasm_bindgen::prelude::*;
 
-pub struct Lexer {
+pub struct Lexer<'a> {
     //Char buffer related things
-    content: Vec<char>,
-    pos: usize,
+    line: &'a str,
+    chars: Chars<'a>,
 
     //Line related things
     tokens: Vec<Token>,
@@ -34,146 +36,196 @@ impl TokenBuf {
         self.tokens.iter().map(|t| t.value.len()).collect()
     }
 }
-
+pub const EOF_CHAR: char = '\0';
 
 
 #[wasm_bindgen]
 pub fn lex(src: &str) -> TokenBuf {
-    let lines: Vec<String> = src.lines().map(|line|line.to_owned()).collect();
-    let tokens = Lexer::new().lex(&lines);
+    let tokens = Lexer::new().lex(src);
     TokenBuf::new(tokens)
 } 
 
-impl Lexer {
+impl <'a> Lexer<'a> {
     pub fn new() -> Self {
         return Self {
-            content: Vec::new(),
-            pos: 0,
+            line: "",
+            chars: "".chars(),
             tokens: Vec::new(),
             lineno: 0,
         }
     }
     
-    pub fn lex(mut self, lines: &[String]) -> Vec<Token> {
-        let mut line_iter = lines.iter();
-        while let Some(line) = line_iter.next() {
+    pub fn lex(mut self, src: &'a str) -> Vec<Token> {
+        for line in src.lines() {
             self.lineno += 1;
-            self.content = line.chars().collect();
-            self.pos = 0;
+            self.line = line;
+            self.chars = line.chars();
             while !self.done() {
-                match self.content[self.pos] {
+                let start = self.pos();
+                match self.next() {
                     '0'..='9' => {
-                        self.next_while(Kind::NUMBER, |x| x.is_ascii_digit());
+                        self.next_while(|x| x.is_ascii_digit());
+                        let end = self.pos();
+                        self.tokens.push(Token{
+                            kind: Kind::NUMBER,
+                            value: self.line[start..end].to_string(),
+                            lineno: self.lineno,
+                            start: start
+                        });
                     }
                     'a'..='z' | 'A'..='Z' => {
-                        self.next_while(Kind::IDENTIFIER, |x| x.is_ascii_alphanumeric());
+                        self.next_while(|x| x.is_ascii_alphanumeric());
+                        let end = self.pos();
+                        let kind = match &self.line[start..end] {
+                            "if" => Kind::IF,
+                            "elif" => Kind::ELIF,
+                            "else" => Kind::ELSE,
+                            "fn" => Kind::FN,
+                            _ => Kind::IDENTIFIER
+                        };
+                        self.tokens.push(Token{
+                            kind: kind,
+                            value: self.line[start..end].to_string(),
+                            lineno: self.lineno,
+                            start: start
+                        });
                     }
-                    _ => {
-                        self.lex_symbol();
+                    c => {
+                        self.lex_symbol(start, c);
                     }
                 }
             }
         }
-        self.tokens.push(Token { kind: Kind::EOF, value: String::new(), lineno: self.lineno, start: self.pos});
+        self.tokens.push(Token { kind: Kind::EOF, value: String::new(), lineno: self.lineno, start: self.pos()});
         return self.tokens;
     }
 
     #[inline]
+    fn pos(&self) -> usize {
+        self.line.len() - self.chars.as_str().len()
+    }
+
+    #[inline]
     fn done(&self) -> bool {
-        return self.pos >= self.content.len();
+        self.chars.as_str().len() == 0
+    }
+
+    #[inline]
+    fn has_next(&self) -> bool {
+        !self.done()
+    }
+
+    #[inline]
+    fn advance(&mut self) {
+        self.chars.next();
+    }
+
+    #[inline]
+    fn first(&self) -> char {
+        self.chars.clone().next().unwrap_or(EOF_CHAR)
+    }
+
+    #[inline]
+    fn second(&self) -> char {
+        let mut chars = self.chars.clone();
+        chars.next();
+        chars.next().unwrap_or(EOF_CHAR)
     }
 
     #[inline]
     fn next(&mut self) -> char {
-        if self.pos >= self.content.len() {
-            return '\0';
-        }
-        self.pos += 1;
-        if self.pos < self.content.len() {
-            return self.content[self.pos];
-        }
-        return '\0';
+        self.chars.next().unwrap_or(EOF_CHAR)
     }
 
     #[inline]
-    fn next_while<F: Fn(char) -> bool>(&mut self, mut kind: Kind, f: F) {
-        let mut value: String = self.content.get(self.pos).unwrap().to_string();
-        let start: usize = self.pos;
-        while f(self.next()) {
-            value.push(self.content[self.pos]);
+    fn next_if<F: Fn(char) -> bool>(&mut self, f: F) -> bool {
+        if f(self.first()) {
+            self.advance();
+            true
+        } else {
+            false
         }
-        match value.as_str() {
-            "if" => kind = Kind::IF,
-            "elif" => kind = Kind::ELIF,
-            "else" => kind = Kind::ELSE,
-            _ => {}
+    }
+    #[inline]
+    fn next_if_eq(&mut self, c: char) -> bool {
+        if self.first() == c {
+            self.advance();
+            true
+        } else {
+            false
         }
-        self.tokens.push(Token {
-            kind: kind, 
-            value: value,
-            lineno: self.lineno,
-            start: start,
-        });
     }
 
     #[inline]
-    fn lex_symbol(&mut self) {
-        let start: usize = self.pos;
+    fn next_while<F: Fn(char) -> bool>(&mut self, f: F) {
+        while f(self.first()) {
+            self.advance();
+        }
+    }
+
+    #[inline]
+    fn lex_symbol(&mut self, start: usize, c: char) {
         let kind: Kind;
-        let mut value: String = self.content[self.pos].to_string();
-        match self.content[self.pos] {
+        match c {
             '{' => {kind = Kind::OPENBRACE}
             '}' => {kind = Kind::CLOSEBRACE}
+            '(' => {kind = Kind::OPENPAREN}
+            ')' => {kind = Kind::CLOSEPAREN}
+            '[' => {kind = Kind::OPENSQUARE}
+            ']' => {kind = Kind::CLOSESQUARE}
             ';' => {kind = Kind::SEMICOLON;}
             ':' => {kind = Kind::COLON;}
-            ' ' => {kind = Kind::WHITESPACE;}
+            ' ' | '\t' => {kind = Kind::WHITESPACE;}
             '+' => {kind = Kind::PLUS;}
-            '-' => {kind = Kind::MINUS;}
+            '-' => {
+                if self.next_if_eq('>') {
+                    kind = Kind::ARROW;
+                } else {
+                    kind = Kind::MINUS;
+                }
+            }
             '*' => {kind = Kind::ASTERIK;}
             '/' => {kind = Kind::SLASH;}
             '=' => {
-                if self.next() == '=' {
+                if self.next_if_eq('=') {
                     kind = Kind::CONDEQ;
-                    value = "==".to_string();
                 }
                 else {
                     kind = Kind::EQUAL;
                 }
             }
             '>' => {
-                if self.next() == '=' {
+                if self.next_if_eq('=') {
                     kind = Kind::CONDGE;
-                    value = ">=".to_string();
                 }
                 else {
                     kind = Kind::CONDG;
                 }
             }
             '<' => {
-                if self.next() == '=' {
+                if self.next_if_eq('=') {
                     kind = Kind::CONDLE;
-                    value = "<=".to_string();
                 }
                 else {
                     kind = Kind::CONDL;
                 }
             }
-            _ => {
-                self.pos += 1;
+            c => {
                 if let Some(token) = self.tokens.last_mut() {
                     if token.kind == Kind::Unknown {
-                        token.value.push(self.content[self.pos-1]);
+                        token.value.push(c);
                         return;
                     }
                 }
-                self.tokens.push(Token { kind: Kind::Unknown, value: self.content[self.pos-1].to_string(), lineno: self.lineno, start });
+                let end = self.pos();
+                self.tokens.push(Token { kind: Kind::Unknown, value: self.line[start..end].to_string(), lineno: self.lineno, start });
                 return;
             }
         }
-        self.pos += 1;
+        let end = self.pos();
         self.tokens.push(Token{
             kind: kind,
-            value: value,
+            value: self.line[start..end].to_string(),
             lineno: self.lineno,
             start: start
         });
