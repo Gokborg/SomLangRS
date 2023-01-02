@@ -175,7 +175,7 @@ impl <'a> Lexer<'a> {
             ']' => {kind = Kind::CLOSESQUARE}
             ';' => {kind = Kind::SEMICOLON;}
             ':' => {kind = Kind::COLON;}
-            ' ' | '\t' => {kind = Kind::WHITESPACE;}
+            ' ' | '\t' => {self.next_while(|c|c.is_whitespace()); kind = Kind::WHITESPACE;}
             '+' => {kind = Kind::PLUS;}
             '-' => {
                 if self.next_if_eq('>') {
