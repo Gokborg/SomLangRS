@@ -14,20 +14,35 @@ impl <'a> Parser<'a> {
     fn parse_expr_l4(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l3,
-            &[Kind::CONDEQ, Kind::CONDG, Kind::CONDGE, Kind::CONDL, Kind::CONDLE]
+            |token| {Some(match token.kind {
+                Kind::CONDEQ => ast::Op::CondEq(token.span()),
+                Kind::CONDG => ast::Op::CondG(token.span()),
+                Kind::CONDGE => ast::Op::CondGEq(token.span()),
+                Kind::CONDL => ast::Op::CondL(token.span()),
+                Kind::CONDLE => ast::Op::CondLEq(token.span()),
+                _ => return None
+            })}
         );
     }
     fn parse_expr_l3(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l2,
-            &[Kind::PLUS, Kind::MINUS]
+            |token| {Some(match token.kind {
+                Kind::PLUS => ast::Op::Add(token.span()),
+                Kind::MINUS => ast::Op::Sub(token.span()),
+                _ => return None
+            })}
         );
     }
 
     fn parse_expr_l2(&mut self) -> PResult<ast::Expression> {
         return self.generic_parse_binop(
             Parser::parse_expr_l1,
-            &[Kind::ASTERIK, Kind::SLASH]
+            |token| {Some(match token.kind {
+                Kind::ASTERIK => ast::Op::Mult(token.span()),
+                Kind::SLASH => ast::Op::Div(token.span()),
+                _ => return None
+            })}
         );
     }
 
@@ -50,44 +65,10 @@ impl <'a> Parser<'a> {
         }
     }
 
-    fn generic_parse_binop<F: Fn(&mut Self) -> PResult<ast::Expression>>(&mut self, f: F, kinds: &[Kind]) -> PResult<ast::Expression> {
+    fn generic_parse_binop<F: Fn(&mut Self) -> PResult<ast::Expression>, OpF: Fn(&Token) -> Option<ast::Op>>(&mut self, f: F, kinds: OpF) -> PResult<ast::Expression> {
         let start_tok: &Token = &self.current();
         let mut expr1: ast::Expression = f(self)?;
-        while kinds.contains(&self.current().kind) {
-            let op: ast::Op;
-            let op_span = span::Span::from_token(&self.current());
-            match self.current().kind {
-                Kind::PLUS => {
-                    op = ast::Op::Add(op_span);
-                }
-                Kind::MINUS => {
-                    op = ast::Op::Sub(op_span);
-                }
-                Kind::ASTERIK => {
-                    op = ast::Op::Mult(op_span);
-                }
-                Kind::SLASH => {
-                    op = ast::Op::Div(op_span);
-                }
-                Kind::CONDEQ => {
-                    op = ast::Op::CondEq(op_span);
-                }
-                Kind::CONDG => {
-                    op = ast::Op::CondG(op_span);
-                }
-                Kind::CONDGE => {
-                    op = ast::Op::CondGEq(op_span);
-                }
-                Kind::CONDL => {
-                    op = ast::Op::CondL(op_span);
-                }
-                Kind::CONDLE => {
-                    op = ast::Op::CondLEq(op_span);
-                }
-                _ => {
-                    panic!("Unknown operator: {}", self.current());
-                }
-            }
+        while let Some(op) = kinds(&self.current()) {
             self.next();
             let expr2: ast::Expression = f(self)?;
             let bin_span = span::Span::new(start_tok.start_loc(), expr2.span().end());
